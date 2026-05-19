@@ -3,112 +3,132 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LeetCode Daily</title>
+    <title>Leonardo Library</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
-    <!-- Header -->
-    <header class="header">
+    <header class="hero">
         <div class="container">
-            <div class="header-content">
-                <div class="header-text">
-                    <h1 id="main-title">Not your typical Leetcode</h1>
-                    <p>A simpler Version, Built for myself to revise before Interviews(I Know I'm Not Haha..), But later decided to Give it to others, Ofcourse for Free</p>
-                    <p>Browse, edit, and explore optimised LeetCode problem solutions</p>
-                    <p class="credits">Thanks to Claude Sonnet, for reducing my Headaches with the Backend Filter Implementation</p>
+            <div class="hero-inner">
+                <div class="hero-brand">
+                    <span class="hero-kicker">Leonardo</span>
+                    <h1 id="main-title">Problem notebooks, stripped down.</h1>
+                    <p class="hero-subtitle">A black-and-white workspace to read, filter, and revise solutions without noise.</p>
                 </div>
-                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
-                    <span class="theme-icon sun">☀</span>
-                    <span class="theme-icon moon">☾</span>
-                </button>
+                <div class="hero-actions">
+                    <button id="toggle-editor" class="btn ghost" type="button">Add Markdown</button>
+                </div>
             </div>
         </div>
     </header>
 
-    <!-- Main Content -->
-    <div class="container main-container">
-        <!-- Statistics Bar -->
-        <div class="stats-bar" id="stats-bar">
-            <div class="stat-box">
-                <div class="stat-value" id="stat-total">0</div>
-                <div class="stat-label">TOTAL</div>
+    <main class="container layout">
+        <aside class="sidebar">
+            <div class="panel search-panel">
+                <label class="panel-label" for="search-input">Search</label>
+                <input type="text" id="search-input" class="input" placeholder="Title, number, tag">
             </div>
-            <div class="stat-box">
-                <div class="stat-value stat-easy" id="stat-easy">0</div>
-                <div class="stat-label">EASY</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-value stat-medium" id="stat-medium">0</div>
-                <div class="stat-label">MEDIUM</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-value stat-hard" id="stat-hard">0</div>
-                <div class="stat-label">HARD</div>
-            </div>
-        </div>
 
-        <!-- Filters and Editor -->
-        <div class="filters-section">
-            <div class="filters-row">
-                <input type="text" id="search-input" class="filter-input" placeholder="Search by title, number, or tag...">
-                
-                <select id="difficulty-filter" class="filter-select">
-                    <option value="All">All Difficulties</option>
-                    <option value="Easy">Easy</option>
-                    <option value="Medium">Medium</option>
-                    <option value="Hard">Hard</option>
-                </select>
-                
-                <select id="tag-filter" class="filter-select">
-                    <option value="">All Tags</option>
-                </select>
-                
-                <select id="sort-select" class="filter-select">
-                    <option value="number_asc">Number ↑</option>
-                    <option value="number_desc">Number ↓</option>
-                    <option value="difficulty_asc">Difficulty ↑</option>
-                    <option value="difficulty_desc">Difficulty ↓</option>
-                    <option value="date_desc">Date ↓</option>
-                </select>
+            <div class="panel">
+                <div class="panel-title">Smart Filters</div>
+                <div class="chip-group" id="smart-filters">
+                    <button class="chip is-active" type="button" data-smart="all">All</button>
+                    <button class="chip" type="button" data-smart="recent">Recent 30d</button>
+                    <button class="chip" type="button" data-smart="has_answer">Has Answer</button>
+                    <button class="chip" type="button" data-smart="needs_answer">Needs Answer</button>
+                </div>
+            </div>
 
-                <button id="toggle-editor" class="editor-toggle-btn" type="button">Markdown Editor</button>
+            <div class="panel">
+                <div class="panel-title">Difficulty</div>
+                <div class="chip-group" id="difficulty-chips">
+                    <button class="chip is-active" type="button" data-difficulty="All">All</button>
+                    <button class="chip" type="button" data-difficulty="Easy">Easy</button>
+                    <button class="chip" type="button" data-difficulty="Medium">Medium</button>
+                    <button class="chip" type="button" data-difficulty="Hard">Hard</button>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-title">Categories</div>
+                <div class="category-list" id="category-list"></div>
+            </div>
+        </aside>
+
+        <section class="content">
+            <div class="toolbar">
+                <div class="stats-bar" id="stats-bar">
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-total">0</div>
+                        <div class="stat-label">Total</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-easy">0</div>
+                        <div class="stat-label">Easy</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-medium">0</div>
+                        <div class="stat-label">Medium</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-hard">0</div>
+                        <div class="stat-label">Hard</div>
+                    </div>
+                </div>
+
+                <div class="toolbar-row">
+                    <div class="active-filters" id="active-filters"></div>
+                    <div class="toolbar-actions">
+                        <label class="select-label">
+                            <span>Tag</span>
+                            <select id="tag-filter" class="select">
+                                <option value="">All tags</option>
+                            </select>
+                        </label>
+                        <label class="select-label">
+                            <span>Sort</span>
+                            <select id="sort-select" class="select">
+                                <option value="number_asc">Number asc</option>
+                                <option value="number_desc">Number desc</option>
+                                <option value="difficulty_asc">Difficulty asc</option>
+                                <option value="difficulty_desc">Difficulty desc</option>
+                                <option value="date_desc">Date desc</option>
+                            </select>
+                        </label>
+                    </div>
+                </div>
             </div>
 
             <div id="editor-panel" class="editor-panel" style="display: none;">
                 <div class="editor-header">
                     <h3>Paste Markdown</h3>
-                    <p>Paste markdown content and save it directly into the problem library.</p>
+                    <p>Save markdown directly into the library. Front-matter will be inferred if missing.</p>
                 </div>
                 <div class="editor-actions-top">
-                    <input type="text" id="editor-filename" class="filter-input" placeholder="Optional filename (e.g. 0001-two-sum.md)">
+                    <input type="text" id="editor-filename" class="input" placeholder="Optional filename (e.g. 0001-two-sum.md)">
                 </div>
                 <textarea id="markdown-editor" class="markdown-editor" placeholder="Paste markdown content here..."></textarea>
                 <div class="editor-actions">
-                    <button id="editor-clear" class="editor-action secondary" type="button">Clear</button>
-                    <button id="editor-save" class="editor-action primary" type="button">Save Markdown</button>
+                    <button id="editor-clear" class="btn ghost" type="button">Clear</button>
+                    <button id="editor-save" class="btn" type="button">Save Markdown</button>
                 </div>
             </div>
-        </div>
 
-        <!-- Status -->
-        <div id="status-message" class="status-message" style="display: none;"></div>
+            <div id="status-message" class="status-message" style="display: none;"></div>
 
-        <!-- Problems Grid / Detail View -->
-        <div id="problems-container">
-        </div>
+            <div id="problems-container"></div>
 
-        <!-- Pagination -->
-        <div class="pagination" id="pagination" style="display: none;">
-            <button id="prev-btn" class="pagination-btn">← Prev</button>
-            <span id="page-info" class="page-info"></span>
-            <button id="next-btn" class="pagination-btn">Next →</button>
-        </div>
-    </div>
+            <div class="pagination" id="pagination" style="display: none;">
+                <button id="prev-btn" class="btn ghost" type="button">Prev</button>
+                <span id="page-info" class="page-info"></span>
+                <button id="next-btn" class="btn ghost" type="button">Next</button>
+            </div>
+        </section>
+    </main>
 
-    <!-- Loading Spinner -->
     <div id="loading" class="loading" style="display: none;">
         <div class="spinner"></div>
     </div>
