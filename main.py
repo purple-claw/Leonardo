@@ -37,6 +37,11 @@ class MarkdownEditorPayload(BaseModel):
     markdown: str
     filename: Optional[str] = None
 
+
+class MarkdownUpdatePayload(BaseModel):
+    slug: str
+    markdown: str
+
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
@@ -166,6 +171,23 @@ def load_all_problems() -> List[dict]:
                     except Exception:
                         pass
     return problems
+
+
+def find_problem_by_slug(slug: str) -> Optional[tuple[Path, str, dict]]:
+    """Find a problem file by slug and return its path, raw markdown, and parsed data."""
+    if not PDIR.exists():
+        return None
+
+    for path in sorted(PDIR.rglob("*.md")):
+        try:
+            raw = path.read_text(encoding="utf-8")
+            parsed = parse_markdown(raw, path.name)
+            if parsed["slug"] == slug:
+                return path, raw, parsed
+        except Exception:
+            continue
+
+    return None
 
 
 def _generate_markdown_with_frontmatter(problem_data: dict) -> str:
@@ -303,6 +325,23 @@ async def get_problem(slug: str):
     return JSONResponse(content=problem)
 
 
+@app.get("/api/problems/{slug}/raw")
+async def get_problem_raw(slug: str):
+    """Get the raw markdown for a problem by slug."""
+    result = find_problem_by_slug(slug)
+    if not result:
+        raise HTTPException(status_code=404, detail="Problem not found")
+
+    path, raw, parsed = result
+    return JSONResponse(content={
+        "slug": parsed["slug"],
+        "title": parsed["title"],
+        "filename": path.name,
+        "path": str(path.relative_to(Path.cwd())),
+        "markdown": raw,
+    })
+
+
 @app.get("/api/stats")
 async def get_stats():
     """Get statistics about all problems."""
@@ -356,6 +395,25 @@ async def save_markdown_from_editor(payload: MarkdownEditorPayload):
         "slug": problem["slug"],
         "path": file_path
     })
+
+
+@app.put("/api/editor/update")
+async def update_markdown_from_editor(payload: MarkdownUpdatePayload):
+    """Update an existing markdown file by slug."""
+    raw = payload.markdown or ""
+    if not raw.strip():
+        raise HTTPException(status_code=400, detail="Markdown content is empty")
+
+    result = find_problem_by_slug(payload.slug)
+    if not result:
+        raise HTTPException(status_code=404, detail="Problem not found")
+
+    path, _, _ = result
+    raw_to_write = raw.rstrip() + "\n"
+    path.write_text(raw_to_write, encoding="utf-8")
+    updated = parse_markdown(raw_to_write, path.name)
+
+    return JSONResponse(content=updated)
 
 
 @app.get("/health")

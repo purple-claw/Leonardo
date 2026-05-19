@@ -3,6 +3,17 @@ let filteredProblems = [];
 let currentPage = 1;
 const itemsPerPage = 12;
 
+const themeState = {
+    current: 'light',
+    manual: false
+};
+
+const editorState = {
+    mode: 'add',
+    slug: null,
+    title: ''
+};
+
 const filters = {
     search: '',
     difficulty: 'All',
@@ -12,6 +23,7 @@ const filters = {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
+    initializeTheme();
     setupEventListeners();
     fetchAllProblems().then(() => handleRouting());
 });
@@ -24,6 +36,9 @@ function setupEventListeners() {
     const smartFilters = document.getElementById('smart-filters');
     const categoryList = document.getElementById('category-list');
     const activeFilters = document.getElementById('active-filters');
+    const themeToggle = document.getElementById('theme-toggle');
+    const editorScreen = document.getElementById('editor-screen');
+    const editorClose = document.getElementById('editor-close');
 
     if (searchInput) {
         searchInput.addEventListener('input', debounce(() => {
@@ -82,9 +97,30 @@ function setupEventListeners() {
         });
     }
 
-    document.getElementById('toggle-editor').addEventListener('click', toggleEditorPanel);
+    if (themeToggle) {
+        themeToggle.addEventListener('click', toggleTheme);
+    }
+
+    document.getElementById('toggle-editor').addEventListener('click', openAddEditor);
     document.getElementById('editor-clear').addEventListener('click', clearEditor);
     document.getElementById('editor-save').addEventListener('click', handleEditorSave);
+    if (editorClose) {
+        editorClose.addEventListener('click', closeEditorScreen);
+    }
+    if (editorScreen) {
+        editorScreen.addEventListener('click', (event) => {
+            if (event.target === editorScreen) {
+                closeEditorScreen();
+            }
+        });
+    }
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && isEditorOpen()) {
+            closeEditorScreen();
+        }
+    });
+
     document.getElementById('prev-btn').addEventListener('click', () => changePage(-1));
     document.getElementById('next-btn').addEventListener('click', () => changePage(1));
     window.addEventListener('popstate', handleRouting);
@@ -100,6 +136,45 @@ function debounce(func, wait) {
         clearTimeout(timeout);
         timeout = setTimeout(later, wait);
     };
+}
+
+function initializeTheme() {
+    const stored = localStorage.getItem('theme');
+    if (stored === 'dark' || stored === 'light') {
+        themeState.manual = true;
+        setTheme(stored, false);
+    } else {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        setTheme(prefersDark ? 'dark' : 'light', false);
+    }
+
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+    media.addEventListener('change', (event) => {
+        if (!themeState.manual) {
+            setTheme(event.matches ? 'dark' : 'light', false);
+        }
+    });
+}
+
+function setTheme(theme, persist = true) {
+    themeState.current = theme;
+    document.documentElement.setAttribute('data-theme', theme);
+    if (persist) {
+        localStorage.setItem('theme', theme);
+        themeState.manual = true;
+    }
+    updateThemeToggle();
+}
+
+function toggleTheme() {
+    const next = themeState.current === 'dark' ? 'light' : 'dark';
+    setTheme(next, true);
+}
+
+function updateThemeToggle() {
+    const themeToggle = document.getElementById('theme-toggle');
+    if (!themeToggle) return;
+    themeToggle.textContent = themeState.current === 'dark' ? 'Light mode' : 'Dark mode';
 }
 
 async function fetchAllProblems() {
@@ -419,10 +494,9 @@ function renderProblemDetail(problem) {
     document.body.classList.add('view-detail');
     const container = document.getElementById('problems-container');
     const pagination = document.getElementById('pagination');
-    const editorPanel = document.getElementById('editor-panel');
     const toggleBtn = document.getElementById('toggle-editor');
     if (pagination) pagination.style.display = 'none';
-    if (editorPanel) editorPanel.style.display = 'none';
+    if (isEditorOpen()) closeEditorScreen();
     if (toggleBtn) toggleBtn.textContent = 'Add Markdown';
 
     const numberText = problem.number ? `#${problem.number}` : 'Unnumbered';
@@ -437,7 +511,10 @@ function renderProblemDetail(problem) {
 
     container.innerHTML = `
         <div class="detail-view">
-            <button class="btn ghost back-btn" type="button" onclick="goBack()">Back to list</button>
+            <div class="detail-top-actions">
+                <button class="btn ghost back-btn" type="button" onclick="goBack()">Back to list</button>
+                <button class="btn ghost" type="button" id="edit-problem-btn">Edit Markdown</button>
+            </div>
             <div class="detail-header">
                 <div class="detail-meta">${numberText} | ${dateText}</div>
                 <h1 class="detail-title">${escapeHtml(problem.title)}</h1>
@@ -462,6 +539,13 @@ function renderProblemDetail(problem) {
             </div>
         </div>
     `;
+
+    const editButton = document.getElementById('edit-problem-btn');
+    if (editButton) {
+        editButton.addEventListener('click', () => {
+            openEditForSlug(problem.slug, problem.title);
+        });
+    }
 }
 
 function createDifficultyBadge(difficulty) {
@@ -717,22 +801,100 @@ function getActiveSlug() {
     return urlParams.get('problem');
 }
 
-function toggleEditorPanel() {
-    const panel = document.getElementById('editor-panel');
-    const toggleBtn = document.getElementById('toggle-editor');
-    const isVisible = panel.style.display !== 'none';
-    panel.style.display = isVisible ? 'none' : 'block';
-    toggleBtn.textContent = isVisible ? 'Add Markdown' : 'Hide Editor';
+function isEditorOpen() {
+    const screen = document.getElementById('editor-screen');
+    return screen ? screen.classList.contains('is-visible') : false;
+}
+
+function openAddEditor() {
+    openEditorScreen({ mode: 'add' });
+}
+
+function openEditorScreen({ mode = 'add', markdown = '', filename = '', slug = null, title = '' } = {}) {
+    const screen = document.getElementById('editor-screen');
+    const modeLabel = document.getElementById('editor-mode-label');
+    const subtitle = document.getElementById('editor-subtitle');
+    const filenameInput = document.getElementById('editor-filename');
+    const markdownEditor = document.getElementById('markdown-editor');
+    const saveButton = document.getElementById('editor-save');
+
+    editorState.mode = mode;
+    editorState.slug = slug;
+    editorState.title = title || '';
+
+    if (modeLabel) {
+        modeLabel.textContent = mode === 'edit' ? 'Edit Markdown' : 'Add Markdown';
+    }
+    if (subtitle) {
+        subtitle.textContent = mode === 'edit'
+            ? `Editing ${editorState.title || 'problem'}.`
+            : 'Create a new problem entry.';
+    }
+    if (filenameInput) {
+        filenameInput.value = filename || '';
+        filenameInput.disabled = mode === 'edit';
+    }
+    if (markdownEditor) {
+        markdownEditor.value = markdown || '';
+    }
+    if (saveButton) {
+        saveButton.textContent = mode === 'edit' ? 'Update Markdown' : 'Save Markdown';
+    }
+
+    if (screen) {
+        screen.classList.add('is-visible');
+        screen.setAttribute('aria-hidden', 'false');
+    }
+    document.body.classList.add('editor-open');
+    if (markdownEditor) {
+        markdownEditor.focus();
+    }
+}
+
+function closeEditorScreen() {
+    const screen = document.getElementById('editor-screen');
+    if (screen) {
+        screen.classList.remove('is-visible');
+        screen.setAttribute('aria-hidden', 'true');
+    }
+    document.body.classList.remove('editor-open');
+    editorState.mode = 'add';
+    editorState.slug = null;
+    editorState.title = '';
 }
 
 function clearEditor() {
-    document.getElementById('markdown-editor').value = '';
-    document.getElementById('editor-filename').value = '';
+    const markdownEditor = document.getElementById('markdown-editor');
+    const filenameInput = document.getElementById('editor-filename');
+    if (markdownEditor) markdownEditor.value = '';
+    if (filenameInput && !filenameInput.disabled) filenameInput.value = '';
+}
+
+async function openEditForSlug(slug, title = '') {
+    if (!slug) return;
+    showLoading(true);
+    try {
+        const data = await fetchProblemRaw(slug);
+        openEditorScreen({
+            mode: 'edit',
+            markdown: data.markdown || '',
+            filename: data.filename || '',
+            slug: slug,
+            title: title || data.title || ''
+        });
+    } catch (error) {
+        console.error('Failed to load markdown:', error);
+        showError(error.message || 'Failed to load markdown.');
+    } finally {
+        showLoading(false);
+    }
 }
 
 async function handleEditorSave() {
-    const rawMarkdown = document.getElementById('markdown-editor').value.trim();
-    const filename = document.getElementById('editor-filename').value.trim();
+    const markdownEditor = document.getElementById('markdown-editor');
+    const filenameInput = document.getElementById('editor-filename');
+    const rawMarkdown = markdownEditor ? markdownEditor.value.trim() : '';
+    const filename = filenameInput ? filenameInput.value.trim() : '';
 
     if (!rawMarkdown) {
         showError('Markdown content is empty. Paste some content first.');
@@ -741,29 +903,78 @@ async function handleEditorSave() {
 
     showLoading(true);
 
-    try {
-        const response = await fetch('/api/editor/save', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                markdown: rawMarkdown,
-                filename: filename || null
-            })
-        });
+    const currentMode = editorState.mode;
+    const currentSlug = editorState.slug;
 
-        const result = await response.json();
-        if (!response.ok) {
-            throw new Error(result.detail || 'Failed to save markdown');
+    try {
+        let result = null;
+        if (currentMode === 'edit') {
+            if (!currentSlug) throw new Error('Missing problem slug for update.');
+            result = await updateMarkdown(currentSlug, rawMarkdown);
+        } else {
+            result = await saveMarkdown(rawMarkdown, filename || null);
         }
 
-        showSuccess(`Saved: ${result.title}`);
+        showSuccess(currentMode === 'edit' ? 'Updated markdown.' : `Saved: ${result.title}`);
+        closeEditorScreen();
         await fetchAllProblems();
+
+        if (currentMode === 'edit') {
+            const nextSlug = result && result.slug ? result.slug : currentSlug;
+            if (nextSlug) {
+                window.history.pushState({ slug: nextSlug }, '', `/?problem=${nextSlug}`);
+                handleRouting();
+            }
+        }
     } catch (error) {
         console.error('Save failed:', error);
         showError(error.message || 'Failed to save markdown.');
     } finally {
         showLoading(false);
     }
+}
+
+async function fetchProblemRaw(slug) {
+    const response = await fetch(`/api/problems/${slug}/raw`);
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(data.detail || 'Failed to load markdown.');
+    }
+    return data;
+}
+
+async function saveMarkdown(markdown, filename) {
+    const response = await fetch('/api/editor/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            markdown: markdown,
+            filename: filename
+        })
+    });
+
+    const result = await response.json();
+    if (!response.ok) {
+        throw new Error(result.detail || 'Failed to save markdown.');
+    }
+    return result;
+}
+
+async function updateMarkdown(slug, markdown) {
+    const response = await fetch('/api/editor/update', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            slug: slug,
+            markdown: markdown
+        })
+    });
+
+    const result = await response.json();
+    if (!response.ok) {
+        throw new Error(result.detail || 'Failed to update markdown.');
+    }
+    return result;
 }
 
 function showLoading(show) {

@@ -20,6 +20,7 @@
                 </div>
                 <div class="hero-actions">
                     <button id="toggle-editor" class="btn ghost" type="button">Add Markdown</button>
+                    <button id="theme-toggle" class="btn ghost theme-toggle" type="button">Dark mode</button>
                 </div>
             </div>
         </div>
@@ -102,21 +103,6 @@
                 </div>
             </div>
 
-            <div id="editor-panel" class="editor-panel" style="display: none;">
-                <div class="editor-header">
-                    <h3>Paste Markdown</h3>
-                    <p>Save markdown directly into the library. Front-matter will be inferred if missing.</p>
-                </div>
-                <div class="editor-actions-top">
-                    <input type="text" id="editor-filename" class="input" placeholder="Optional filename (e.g. 0001-two-sum.md)">
-                </div>
-                <textarea id="markdown-editor" class="markdown-editor" placeholder="Paste markdown content here..."></textarea>
-                <div class="editor-actions">
-                    <button id="editor-clear" class="btn ghost" type="button">Clear</button>
-                    <button id="editor-save" class="btn" type="button">Save Markdown</button>
-                </div>
-            </div>
-
             <div id="status-message" class="status-message" style="display: none;"></div>
 
             <div id="problems-container"></div>
@@ -128,6 +114,28 @@
             </div>
         </section>
     </main>
+
+    <div id="editor-screen" class="editor-screen" aria-hidden="true">
+        <div class="editor-shell" role="dialog" aria-modal="true" aria-labelledby="editor-mode-label">
+            <div class="editor-toolbar">
+                <div class="editor-meta">
+                    <div class="editor-mode" id="editor-mode-label">Add Markdown</div>
+                    <div class="editor-subtitle" id="editor-subtitle">Create a new problem entry.</div>
+                </div>
+                <button id="editor-close" class="btn ghost" type="button">Close</button>
+            </div>
+            <div class="editor-form">
+                <label class="panel-label" for="editor-filename">Filename</label>
+                <input type="text" id="editor-filename" class="input" placeholder="Optional filename (e.g. 0001-two-sum.md)">
+                <label class="panel-label" for="markdown-editor">Markdown</label>
+                <textarea id="markdown-editor" class="markdown-editor" placeholder="Paste markdown content here..."></textarea>
+            </div>
+            <div class="editor-footer">
+                <button id="editor-clear" class="btn ghost" type="button">Clear</button>
+                <button id="editor-save" class="btn" type="button">Save Markdown</button>
+            </div>
+        </div>
+    </div>
 
     <div id="loading" class="loading" style="display: none;">
         <div class="spinner"></div>

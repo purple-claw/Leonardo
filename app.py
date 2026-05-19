@@ -41,7 +41,7 @@ KNOWN_TAGS = [
 # ---------------------------------------------------------------------------
 
 st.set_page_config(
-    page_title="LeetCode Daily Series",
+    page_title="Leonardo",
     page_icon="⚡",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -298,12 +298,6 @@ def _infer_title(body: str, filename: str) -> str:
     # Convert "0001-two-sum" → "Two Sum"
     stem = re.sub(r"^\d+-", "", stem)
     return stem.replace("-", " ").title()
-
-
-# ---------------------------------------------------------------------------
-# Helpers — loading
-# ---------------------------------------------------------------------------
-
 
 @st.cache_data(show_spinner=False)
 def load_bundled_problems() -> list[dict]:
@@ -564,7 +558,7 @@ def render_sidebar(all_problems: list[dict]):
                         st.error(f"Failed to save {p.get('title', 'problem')}: {str(e)}")
             
             if added:
-                st.success(f"✅ Added and saved {added} problem(s)!")
+                st.success(f"Added and saved {added} problem(s)!")
                 with st.expander("View saved locations"):
                     for path in saved_paths:
                         st.code(path, language="text")
@@ -691,7 +685,6 @@ def render_problem_card(problem: dict, col):
 
 
 def render_pagination(total: int) -> int:
-    """Render pagination controls; returns the (possibly updated) page number."""
     total_pages = max(1, (total + ITMS - 1) // ITMS)
     page = st.session_state.page
 
@@ -794,8 +787,6 @@ def render_detail_view(problem: dict):
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
-
-
 def main():
     _init_state()
 
