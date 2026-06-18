@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eigenfaces: Interactive Dimensionality Reduction</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.18/index.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/fira-code@5.0.18/index.min.css">
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    .font-mono { font-family: 'Fira Code', monospace; }
+    .fade-in { animation: fadeIn 0.6s ease-out forwards; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .eigen-glow { filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.3)); }
+    .slider-thumb::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none; width: 20px; height: 20px; background: #3b82f6; border-radius: 50%; cursor: pointer; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    .slider-thumb::-moz-range-thumb { width: 20px; height: 20px; background: #3b82f6; border-radius: 50%; cursor: pointer; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased">
+
+  <main class="max-w-5xl mx-auto p-6 md:p-12 space-y-16">
+
+    <!-- Header -->
+    <header class="text-center space-y-4">
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold mb-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+        Linear Algebra in Practice
+      </div>
+      <h1 class="text-4xl md:text-5xl font-bold text-slate-900 tracking-tight">The Magic of Eigenfaces</h1>
+      <p class="text-lg text-slate-600 max-w-3xl mx-auto leading-relaxed">
+        How a massive collection of high-dimensional face photographs can be compressed, understood, and reconstructed using just a few fundamental "directions" of variation.
+      </p>
+    </header>
+
+    <!-- Simulation 1: The Flattening -->
+    <section class="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+      <div class="p-6 md:p-8 border-b border-slate-100 bg-slate-50/50">
+        <h2 class="text-2xl font-bold text-slate-900 flex items-center gap-3">
+          <span class="bg-blue-600 text-white w-8 h-8 rounded-lg flex items-center justify-center text-sm">1</span>
+          The High-Dimensional Cloud
+        </h2>
+      </div>
+      <div id="sim1" class="p-6 md:p-8"></div>
+    </section>
+
+    <!-- Simulation 2: Eigenvectors & Eigenvalues -->
+    <section class="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+      <div class="p-6 md:p-8 border-b border-slate-100 bg-slate-50/50">
+        <h2 class="text-2xl font-bold text-slate-900 flex items-center gap-3">
+          <span class="bg-blue-600 text-white w-8 h-8 rounded-lg flex items-center justify-center text-sm">2</span>
+          Directions (Eigenvectors) & Importance (Eigenvalues)
+        </h2>
+      </div>
+      <div id="sim2" class="p-6 md:p-8"></div>
+    </section>
+
+    <!-- Simulation 3: Reconstruction -->
+    <section class="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+      <div class="p-6 md:p-8 border-b border-slate-100 bg-slate-50/50">
+        <h2 class="text-2xl font-bold text-slate-900 flex items-center gap-3">
+          <span class="bg-blue-600 text-white w-8 h-8 rounded-lg flex items-center justify-center text-sm">3</span>
+          The Reconstruction Magic
+        </h2>
+      </div>
+      <div id="sim3" class="p-6 md:p-8"></div>
+    </section>
+
+  </main>
+
+  <!-- SVG Definitions (Hidden) -->
+  <svg width="0" height="0" class="absolute">
+    <defs>
+      <!-- Mean Face Gradient -->
+      <radialGradient id="meanGrad" cx="50%" cy="40%" r="50%">
+        <stop offset="0%" stop-color="#cbd5e1" />
+        <stop offset="100%" stop-color="#94a3b8" />
+      </radialGradient>
+      
+      <!-- Eigenface 1: Width (Horizontal variation) -->
+      <linearGradient id="eigen1Grad" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#1e293b" stop-opacity="0.8" />
+        <stop offset="50%" stop-color="#f8fafc" stop-opacity="0.9" />
+        <stop offset="100%" stop-color="#1e293b" stop-opacity="0.8" />
+      </linearGradient>
+
+      <!-- Eigenface 2: Lighting/Smile (Diagonal/Curved variation) -->
+      <linearGradient id="eigen2Grad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#f8fafc" stop-opacity="0.9" />
+        <stop offset="100%" stop-color="#334155" stop-opacity="0.8" />
+      </linearGradient>
+
+      <!-- Noise Filter -->
+      <filter id="noiseFilter">
+        <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="4" stitchTiles="stitch" />
+        <feColorMatrix type="saturate" values="0" />
+        <feComponentTransfer>
+          <feFuncA type="linear" slope="0.3" />
+        </feComponentTransfer>
+      </filter>
+
+      <!-- Face Mask -->
+      <mask id="faceMask">
+        <ellipse cx="100" cy="110" rx="65" ry="85" fill="white" />
+        <ellipse cx="75" cy="90" rx="10" ry="6" fill="black" />
+        <ellipse cx="125" cy="90" rx="10" ry="6" fill="black" />
+        <path d="M 90 140 Q 100 150 110 140" stroke="black" stroke-width="4" fill="none" />
+      </mask>
+    </defs>
+  </svg>
+
+  <script>
+    // --- Simulation Engine ---
+    const sims = {};
+
+    class Sim {
+      constructor(id, steps) {
+        this.el = document.getElementById(id);
+        this.steps = steps;
+        this.current = 0;
+        this.render();
+      }
+      next() {
+        if (this.current < this.steps.length - 1) {
+          this.current++;
+          this.render();
+        }
+      }
+      prev() {
+        if (this.current > 0) {
+          this.current--;
+          this.render();
+        }
+      }
+      goTo(index) {
+        this.current = index;
+        this.render();
+      }
+      render() {
+        const step = this.steps[this.current];
+        let html = `<div class="mb-6 p-5 bg-blue-50 border-l-4 border-blue-500 rounded-r-lg text-blue-900 font-medium leading-relaxed shadow-sm fade-in">${step.desc}</div>`;
+        
+        html += `<div class="flex flex-wrap gap-8 justify-center items-start mb-8 fade-in">`;
+        if (step.visuals) {
+          step.visuals.forEach(v => {
+            html += this.renderVisual(v);
+          });
+        }
+        html += `</div>`;
+
+        if (step.slider) {
+          html += `<div class="max-w-md mx-auto mb-8 fade-in">`;
+          html += `<div class="flex justify-between text-sm font-semibold text-slate-600 mb-2">`;
+          html += `<span>Components: <span id="slider-val-${this.el.id}" class="text-blue-600 text-lg">${step.slider.value}</span></span>`;
+          html += `<span class="text-slate-400">Dimensions: ${step.slider.dims[step.slider.value]}</span>`;
+          html += `</div>`;
+          html += `<input type="range" min="0" max="${step.slider.max}" value="${step.slider.value}" class="slider-thumb w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" oninput="sims['${this.el.id}'].updateSlider(this.value)">`;
+          html += `</div>`;
+          // Dynamic visual update for slider
+          html += `<div id="slider-visual-${this.el.id}" class="flex justify-center fade-in">`;
+          html += step.slider.getVisual(step.slider.value);
+          html += `</div>`;
+        }
+        
+        html += `<div class="flex gap-4 justify-center mt-8 fade-in">`;
+        html += `<button onclick="sims['${this.el.id}'].prev()" ${this.current === 0 ? 'disabled' : ''} class="px-6 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded-lg transition disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg> Previous
+        </button>`;
+        html += `<button onclick="sims['${this.el.id}'].next()" ${this.current === this.steps.length - 1 ? 'disabled' : ''} class="px-6 py-2.5 bg-blue-600 text-white hover:bg-blue-700 font-semibold rounded-lg shadow-md transition disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2">
+          Next Step <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+        </button>`;
+        html += `</div>`;
+        
+        this.el.innerHTML = html;
+      }
+
+      updateSlider(val) {
+        document.getElementById(`slider-val-${this.el.id}`).textContent = val;
+        const step = this.steps[this.current];
+        document.getElementById(`slider-visual-${this.el.id}`).innerHTML = step.slider.getVisual(parseInt(val));
+      }
+
+      renderVisual(v) {
+        let html = `<div class="flex flex-col items-center text-center">`;
+        if (v.title) html += `<div class="font-bold text-slate-800 mb-2">${v.title}</div>`;
+        if (v.subtitle) html += `<div class="text-xs text-slate-500 mb-3 font-mono">${v.subtitle}</div>`;
+        
+        if (v.type === 'grid-to-vector') {
+          html += `<div class="relative">`;
+          html += `<div class="grid grid-cols-8 gap-1 mb-4 transition-all duration-700 ${v.state === 'vector' ? 'grid-cols-1 scale-75 opacity-50' : 'opacity-100'}">`;
+          for(let i=0; i<32; i++) {
+            const shade = Math.floor(Math.random() * 200) + 55;
+            html += `<div class="w-6 h-6 rounded-sm bg-slate-${shade >= 200 ? '100' : shade >= 150 ? '300' : shade >= 100 ? '500' : '700'}"></div>`;
+          }
+          html += `</div>`;
+          if (v.state === 'vector') {
+            html += `<div class="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-8 bg-slate-800 rounded flex items-center justify-center text-white font-mono text-xs shadow-lg">[142, 89, 201, 55, ... 784 elements]</div>`;
+          }
+          html += `</div>`;
+        } 
+        else if (v.type === 'face') {
+          html += `<div class="relative w-48 h-60 bg-slate-100 rounded-xl border-2 ${v.border || 'border-slate-300'} overflow-hidden shadow-sm eigen-glow">`;
+          html += `<svg viewBox="0 0 200 220" class="w-full h-full" style="mix-blend-mode: ${v.blend || 'normal'}">`;
+          
+          // Base face shape
+          html += `<ellipse cx="100" cy="110" rx="65" ry="85" fill="${v.baseColor || '#cbd5e1'}" />`;
+          
+          // Features
+          if (v.features !== false) {
+            html += `<ellipse cx="75" cy="90" rx="10" ry="6" fill="#64748b" />`;
+            html += `<ellipse cx="125" cy="90" rx="10" ry="6" fill="#64748b" />`;
+            html += `<path d="M 90 140 Q 100 148 110 140" stroke="#64748b" stroke-width="3" fill="none" />`;
+          }
+
+          // Eigenface overlays
+          if (v.eigen1) {
+            html += `<ellipse cx="100" cy="110" rx="65" ry="85" fill="url(#eigen1Grad)" opacity="0.7" style="mix-blend-mode: overlay;" />`;
+          }
+          if (v.eigen2) {
+            html += `<ellipse cx="100" cy="110" rx="65" ry="85" fill="url(#eigen2Grad)" opacity="0.6" style="mix-blend-mode: soft-light;" />`;
+          }
+          if (v.noise) {
+            html += `<rect width="200" height="220" filter="url(#noiseFilter)" opacity="0.5" />`;
+          }
+          
+          // High detail overlay for "original"
+          if (v.detail) {
+             html += `<path d="M 70 90 Q 75 85 80 90" stroke="#475569" stroke-width="1.5" fill="none" opacity="0.6"/>`;
+             html += `<path d="M 120 90 Q 125 85 130 90" stroke="#475569" stroke-width="1.5" fill="none" opacity="0.6"/>`;
+             html += `<path d="M 95 140 Q 100 145 105 140" stroke="#475569" stroke-width="2" fill="none" opacity="0.8"/>`;
+          }
+
+          html += `</svg>`;
+          
+          if (v.badge) {
+            html += `<div class="absolute top-2 right-2 px-2 py-1 bg-white/90 backdrop-blur rounded text-xs font-bold text-slate-700 shadow-sm border border-slate-200">${v.badge}</div>`;
+          }
+          html += `</div>`;
+        }
+        else if (v.type === 'chart') {
+          html += `<div class="w-48 h-60 bg-slate-50 rounded-xl border-2 border-slate-200 p-4 flex flex-col justify-end gap-2 relative">`;
+          html += `<div class="absolute top-2 left-0 w-full text-center text-xs font-bold text-slate-500 uppercase tracking-wider">Eigenvalues (Importance)</div>`;
+          
+          // Bar 1: Huge
+          const h1 = 80;
+          html += `<div class="flex items-end gap-2">`;
+          html += `<div class="w-8 bg-blue-500 rounded-t-md transition-all duration-500 relative group" style="height: ${h1}%">`;
+          html += `<div class="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-bold text-blue-600 opacity-0 group-hover:opacity-100 transition">λ₁ = 450.2</div>`;
+          html += `</div>`;
+          html += `<div class="text-xs text-slate-600 pb-1">Width</div>`;
+          html += `</div>`;
+
+          // Bar 2: Medium
+          const h2 = 35;
+          html += `<div class="flex items-end gap-2">`;
+          html += `<div class="w-8 bg-purple-500 rounded-t-md transition-all duration-500 relative group" style="height: ${h2}%">`;
+          html += `<div class="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-bold text-purple-600 opacity-0 group-hover:opacity-100 transition">λ₂ = 120.5</div>`;
+          html += `</div>`;
+          html += `<div class="text-xs text-slate-600 pb-1">Light</div>`;
+          html += `</div>`;
+
+          // Bar 3: Tiny
+          const h3 = 5;
+          html += `<div class="flex items-end gap-2">`;
+          html += `<div class="w-8 bg-red-400 rounded-t-md transition-all duration-500 relative group" style="height: ${h3}%">`;
+          html += `<div class="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-bold text-red-600 opacity-0 group-hover:opacity-100 transition">λₙ = 0.02</div>`;
+          html += `</div>`;
+          html += `<div class="text-xs text-slate-600 pb-1">Noise</div>`;
+          html += `</div>`;
+          
+          html += `</div>`;
+        }
+
+        html += `</div>`;
+        return html;
+      }
+    }
+
+    // --- Simulation Configurations ---
+    
+    sims['sim1'] = new Sim('sim1', [
+      {
+        desc: "<strong>The Setup:</strong> Imagine a huge collection of face photographs, all the same size (e.g., 28x28 pixels = 784 pixels), all facing forward.",
+        visuals: [
+          { type: 'face', title: 'Photograph 1', baseColor: '#cbd5e1', detail: true, badge: '28×28 px' },
+          { type: 'face', title: 'Photograph 2', baseColor: '#cbd5e1', detail: true, badge: '28×28 px' },
+          { type: 'face', title: 'Photograph 3', baseColor: '#cbd5e1', detail: true, badge: '28×28 px' }
+        ]
+      },
+      {
+        desc: "<strong>Step 1: Flattening:</strong> We treat every photograph as a giant vector. The 2D grid of 784 pixels is unrolled into a single, long 1D list of numbers.",
+        visuals: [
+          { type: 'grid-to-vector', state: 'vector', title: 'Face Vector', subtitle: 'Shape: (784,)' }
+        ]
+      },
+      {
+        desc: "<strong>The High-Dimensional Cloud:</strong> If we have 10,000 faces, we now have 10,000 points in a 784-dimensional space. This is our 'data cloud'.",
+        visuals: [
+          { type: 'face', title: 'Data Cloud', subtitle: '10,000 points in ℝ⁷⁸⁴', baseColor: '#94a3b8', badge: 'High-Dimensional' }
+        ]
+      }
+    ]);
+
+    sims['sim2'] = new Sim('sim2', [
+      {
+        desc: "<strong>Finding the 'Directions' (Eigenvectors):</strong> Even in 784 dimensions, the actual differences between faces lie along a few key 'directions'. We calculate the 'Mean Face' first.",
+        visuals: [
+          { type: 'face', title: 'Mean Face', subtitle: 'The average of all faces', baseColor: '#cbd5e1', features: true, badge: 'Baseline' }
+        ]
+      },
+      {
+        desc: "<strong>Eigenvector 1:</strong> The first principal direction of variation. In this case, it captures 'how wide or narrow the face is' (and overall contrast).",
+        visuals: [
+          { type: 'face', title: 'Eigenface 1', subtitle: 'Eigenvector 1', baseColor: '#e2e8f0', eigen1: true, badge: 'Width/Contrast' }
+        ]
+      },
+      {
+        desc: "<strong>Eigenvector 2:</strong> The second direction. This might capture 'lighting from the left vs. right' or 'how much the person is smiling'.",
+        visuals: [
+          { type: 'face', title: 'Eigenface 2', subtitle: 'Eigenvector 2', baseColor: '#e2e8f0', eigen2: true, badge: 'Lighting/Smile' }
+        ]
+      },
+      {
+        desc: "<strong>The Eigenvalues (Importance):</strong> The eigenvalue (λ) tells us how much variance this direction explains. 'Width' has a huge λ (very important). Camera sensor noise has a tiny λ (barely matters).",
+        visuals: [
+          { type: 'face', title: 'Eigenface 1', subtitle: 'λ₁ = 450.2 (Huge)', baseColor: '#e2e8f0', eigen1: true, badge: 'Important' },
+          { type: 'face', title: 'Eigenface 2', subtitle: 'λ₂ = 120.5 (Medium)', baseColor: '#e2e8f0', eigen2: true, badge: 'Useful' },
+          { type: 'chart', title: 'Eigenvalues', subtitle: 'Magnitude of variance' }
+        ]
+      }
+    ]);
+
+    sims['sim3'] = new Sim('sim3', [
+      {
+        desc: "<strong>The Reconstruction Magic:</strong> We can rebuild any face by starting with the Mean Face, and adding weighted combinations of these Eigenfaces. We discard the tiny-eigenvalue 'noise' directions entirely!",
+        slider: {
+          value: 0,
+          max: 3,
+          dims: ['~784 (Original)', '1 (Mean Only)', '2 (+ Width)', '3 (+ Lighting)'],
+          getVisual: (val) => {
+            if (val === 0) return `<div class="text-slate-500 italic">Move the slider to begin reconstruction</div>`;
+            if (val === 1) return `<div class="flex flex-col items-center"><div class="text-sm font-bold text-slate-600 mb-2">Mean Face Only</div>` + 
+              sims['sim3'].steps[0].visuals[0] /* hacky but works for inline, better to redefine */;
+            // Let's build proper visuals for the slider
+            let faces = [];
+            if (val >= 1) {
+               faces.push({ type: 'face', baseColor: '#cbd5e1', features: true });
+            }
+            if (val >= 2) {
+               faces[0].eigen1 = true;
+            }
+            if (val >= 3) {
+               faces[0].eigen2 = true;
+               faces[0].detail = true;
+               faces[0].badge = 'Reconstructed';
+            }
+            
+            let html = `<div class="flex flex-col items-center">`;
+            html += `<div class="text-sm font-bold text-slate-600 mb-2">${val === 1 ? 'Mean Face' : val === 2 ? 'Mean + Eigenface 1' : 'Mean + Eigenface 1 + 2'}</div>`;
+            
+            // Inline SVG for slider to ensure it updates cleanly
+            html += `<div class="relative w-48 h-60 bg-slate-100 rounded-xl border-2 border-blue-400 overflow-hidden shadow-lg eigen-glow">`;
+            html += `<svg viewBox="0 0 200 220" class="w-full h-full">`;
+            html += `<ellipse cx="100" cy="110" rx="65" ry="85" fill="#cbd5e1" />`;
+            if (val >= 1) {
+              html += `<ellipse cx="75" cy="90" rx="10" ry="6" fill="#64748b" />`;
+              html += `<ellipse cx="125" cy="90" rx="10" ry="6" fill="#64748b" />`;
+              html += `<path d="M 90 140 Q 100 148 110 140" stroke="#64748b" stroke-width="3" fill="none" />`;
+            }
+            if (val >= 2) {
+              html += `<ellipse cx="100" cy="110" rx="65" ry="85" fill="url(#eigen1Grad)" opacity="0.7" style="mix-blend-mode: overlay;" />`;
+            }
+            if (val >= 3) {
+              html += `<ellipse cx="100" cy="110" rx="65" ry="85" fill="url(#eigen2Grad)" opacity="0.6" style="mix-blend-mode: soft-light;" />`;
+              html += `<path d="M 70 90 Q 75 85 80 90" stroke="#475569" stroke-width="1.5" fill="none" opacity="0.6"/>`;
+              html += `<path d="M 120 90 Q 125 85 130 90" stroke="#475569" stroke-width="1.5" fill="none" opacity="0.6"/>`;
+              html += `<path d="M 95 140 Q 100 145 105 140" stroke="#475569" stroke-width="2" fill="none" opacity="0.8"/>`;
+            }
+            html += `</svg>`;
+            if (val === 3) html += `<div class="absolute top-2 right-2 px-2 py-1 bg-blue-600 text-white rounded text-xs font-bold shadow-sm">Reconstructed</div>`;
+            html += `</div></div>`;
+            return html;
+          }
+        }
+      }
+    ]);
+
+    // Fix sim3 initial visual to match slider logic
+    sims['sim3'].steps[0].visuals = [{ type: 'face', title: 'Original Face', subtitle: 'Target for reconstruction', baseColor: '#cbd5e1', detail: true, badge: 'Original' }];
+
+  </script>
+</body>
+</html>
+

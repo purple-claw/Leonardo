@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <title>Leonardo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #fdfdfb;
+      --ink: #111111;
+      --muted: #5c5c5c;
+      --line: #e7e7e2;
+      --panel: #ffffff;
+      --panel-soft: #f6f6f3;
+      --shadow-sm: 0 8px 24px rgba(0,0,0,0.05);
+      --radius: 18px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
+      --font-sans: 'Instrument Sans', 'Segoe UI', 'Helvetica', sans-serif;
+      --font-mono: 'IBM Plex Mono', 'SFMono-Regular', 'Menlo', monospace;
+    }
+
+    [data-theme="dark"] {
+      --bg: #0a0a0a;
+      --ink: #f5f5f5;
+      --muted: #b3b3b3;
+      --line: #1f1f1f;
+      --panel: #111111;
+      --panel-soft: #151515;
+      --shadow-sm: 0 10px 30px rgba(0,0,0,0.6);
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg);
+      background-image:
+        radial-gradient(circle at 1px 1px, rgba(128,128,128,0.06) 1px, transparent 0);
+      background-size: 24px 24px;
+      color: var(--ink);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 2rem; }
+
+    /* ── Header ── */
+    header {
+      padding: 2.5rem 0 1.5rem;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 2rem;
+    }
+
+    .kicker {
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      font-size: 0.7rem;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 600;
+      margin-top: 0.4rem;
+      letter-spacing: -0.02em;
+    }
+
+    .header-actions { display: flex; gap: 0.75rem; align-items: center; }
+
+    /* ── Buttons ── */
+    .btn {
+      border: 1px solid var(--ink);
+      background: var(--ink);
+      color: var(--bg);
+      padding: 0.55rem 1.3rem;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      font-family: var(--font-sans);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    .btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+
+    .btn.ghost {
+      background: transparent;
+      color: var(--ink);
+    }
+
+    .btn.ghost:hover { background: var(--ink); color: var(--bg); }
+
+    .btn.sm { padding: 0.35rem 0.9rem; font-size: 0.78rem; }
+
+    .btn.danger { border-color: #ef4444; color: #ef4444; background: transparent; }
+    .btn.danger:hover { background: #ef4444; color: white; }
+
+    /* ── Stats ── */
+    .stats {
+      display: flex;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      padding: 1rem 1.5rem;
+      min-width: 120px;
+    }
+
+    .stat-value { font-size: 1.8rem; font-weight: 700; }
+    .stat-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; }
+
+    /* ── Grid ── */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .card {
+      display: block;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+      position: relative;
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-sm);
+      border-color: var(--muted);
+    }
+
+    .card-type {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      background: var(--panel-soft);
+      border: 1px solid var(--line);
+      margin-bottom: 0.75rem;
+    }
+
+    .card-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.4rem; }
+    .card-meta { font-size: 0.78rem; color: var(--muted); }
+    .card-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.75rem; }
+
+    .tag {
+      font-size: 0.68rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 999px;
+      background: var(--panel-soft);
+      border: 1px solid var(--line);
+      color: var(--muted);
+    }
+
+    .card-delete {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 0.25rem;
+      opacity: 0;
+      transition: opacity 0.15s, color 0.15s;
+    }
+
+    .card:hover .card-delete { opacity: 1; }
+    .card-delete:hover { color: #ef4444; }
+
+    /* ── Empty state ── */
+    .empty {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: var(--muted);
+    }
+
+    .empty-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.3; }
+    .empty h2 { font-size: 1.2rem; color: var(--ink); margin-bottom: 0.5rem; }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.active { display: flex; }
+
+    .modal {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 2rem;
+      width: 90%;
+      max-width: 700px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal h2 { font-size: 1.3rem; margin-bottom: 1.5rem; }
+
+    .form-group { margin-bottom: 1.25rem; }
+    .form-label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 0.4rem;
+    }
+
+    .form-input, .form-textarea, .form-select {
+      width: 100%;
+      padding: 0.65rem 0.9rem;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      background: var(--panel-soft);
+      color: var(--ink);
+      font-family: var(--font-sans);
+      font-size: 0.9rem;
+    }
+
+    .form-textarea {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      min-height: 250px;
+      resize: vertical;
+      tab-size: 2;
+    }
+
+    .form-input:focus, .form-textarea:focus, .form-select:focus {
+      outline: none;
+      border-color: var(--ink);
+    }
+
+    .form-row { display: flex; gap: 1rem; }
+    .form-row .form-group { flex: 1; }
+
+    .form-actions { display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem; }
+
+    .tabs { display: flex; gap: 0; margin-bottom: 1.25rem; border: 1px solid var(--line); border-radius: var(--radius-sm); overflow: hidden; }
+    .tab {
+      flex: 1;
+      padding: 0.6rem;
+      background: var(--panel-soft);
+      border: none;
+      cursor: pointer;
+      font-family: var(--font-sans);
+      font-weight: 600;
+      font-size: 0.82rem;
+      color: var(--muted);
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .tab.active { background: var(--ink); color: var(--bg); }
+    .tab:not(.active):hover { background: var(--line); }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .drop-zone {
+      border: 2px dashed var(--line);
+      border-radius: var(--radius-md);
+      padding: 2.5rem;
+      text-align: center;
+      color: var(--muted);
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .drop-zone:hover, .drop-zone.dragover {
+      border-color: var(--ink);
+      background: var(--panel-soft);
+    }
+
+    .drop-zone p { margin-top: 0.5rem; font-size: 0.85rem; }
+    .drop-zone .icon { font-size: 2rem; opacity: 0.4; }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+      .stats { flex-wrap: wrap; }
+      .grid { grid-template-columns: 1fr; }
+      .form-row { flex-direction: column; gap: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <span class="kicker">Leonardo</span>
+        <h1>Your learning artifacts.</h1>
+      </div>
+      <div class="header-actions">
+        <button class="btn ghost sm" id="theme-toggle">Dark mode</button>
+        <button class="btn" id="btn-upload">New artifact</button>
+      </div>
+    </header>
+
+    <div class="stats" id="stats">
+      <div class="stat"><div class="stat-value" id="stat-total">0</div><div class="stat-label">Total</div></div>
+      <div class="stat"><div class="stat-value" id="stat-html">0</div><div class="stat-label">HTML</div></div>
+      <div class="stat"><div class="stat-value" id="stat-jsx">0</div><div class="stat-label">JSX</div></div>
+    </div>
+
+    <div id="content"></div>
+  </div>
+
+  <!-- Upload Modal -->
+  <div class="modal-overlay" id="upload-modal">
+    <div class="modal">
+      <h2>New Artifact</h2>
+
+      <div class="tabs">
+        <button class="tab active" data-tab="paste">Paste Code</button>
+        <button class="tab" data-tab="file">Upload File</button>
+      </div>
+
+      <div class="tab-content active" data-tab="paste">
+        <form id="paste-form">
+          <div class="form-group">
+            <label class="form-label">Title</label>
+            <input class="form-input" name="title" placeholder="My artifact" required>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Type</label>
+              <select class="form-select" name="type">
+                <option value="html">HTML</option>
+                <option value="jsx">JSX</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Category</label>
+              <input class="form-input" name="category" placeholder="linear-algebra">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tags (comma separated)</label>
+            <input class="form-input" name="tags" placeholder="eigenfaces, pca, visualization">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Content</label>
+            <textarea class="form-textarea" name="content" placeholder="Paste your HTML or JSX code here..." required></textarea>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn ghost" id="paste-cancel">Cancel</button>
+            <button type="submit" class="btn">Create</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="tab-content" data-tab="file">
+        <form id="file-form">
+          <div class="drop-zone" id="drop-zone">
+            <div class="icon">+</div>
+            <p>Drag & drop a file or click to browse</p>
+            <p style="font-size:0.72rem;margin-top:0.5rem">.html, .htm, .jsx, .tsx</p>
+          </div>
+          <input type="file" id="file-input" accept=".html,.htm,.jsx,.tsx" hidden>
+          <div id="file-info" style="display:none;margin-top:1rem;padding:0.75rem;background:var(--panel-soft);border-radius:var(--radius-sm);font-size:0.85rem"></div>
+          <div class="form-group" style="margin-top:1rem">
+            <label class="form-label">Title (optional)</label>
+            <input class="form-input" name="title" placeholder="Auto-detected from filename">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Category</label>
+              <input class="form-input" name="category" placeholder="linear-algebra">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Tags</label>
+              <input class="form-input" name="tags" placeholder="tag1, tag2">
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn ghost" id="file-cancel">Cancel</button>
+            <button type="submit" class="btn" id="file-submit" disabled>Upload</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = '/api';
+    let artifacts = [];
+
+    // ── Theme ──
+    const themeToggle = document.getElementById('theme-toggle');
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    themeToggle.textContent = savedTheme === 'dark' ? 'Light mode' : 'Dark mode';
+
+    themeToggle.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+      themeToggle.textContent = next === 'dark' ? 'Light mode' : 'Dark mode';
+    });
+
+    // ── Fetch artifacts ──
+    async function loadArtifacts() {
+      const res = await fetch(`${API}/artifacts`);
+      artifacts = await res.json();
+      render();
+    }
+
+    // ── Render grid ──
+    function render() {
+      document.getElementById('stat-total').textContent = artifacts.length;
+      document.getElementById('stat-html').textContent = artifacts.filter(a => a.type === 'html').length;
+      document.getElementById('stat-jsx').textContent = artifacts.filter(a => a.type === 'jsx').length;
+
+      const el = document.getElementById('content');
+      if (artifacts.length === 0) {
+        el.innerHTML = `
+          <div class="empty">
+            <div class="empty-icon">+</div>
+            <h2>No artifacts yet</h2>
+            <p>Upload your first HTML or JSX artifact to get started.</p>
+          </div>`;
+        return;
+      }
+
+      el.innerHTML = `<div class="grid">${artifacts.map(cardHtml).join('')}</div>`;
+
+      el.querySelectorAll('.card-delete').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          if (!confirm('Delete this artifact?')) return;
+          await fetch(`${API}/artifacts/${btn.dataset.id}`, { method: 'DELETE' });
+          loadArtifacts();
+        });
+      });
+    }
+
+    function cardHtml(art) {
+      const date = new Date(art.createdAt).toLocaleDateString();
+      const tags = (art.tags || []).map(t => `<span class="tag">${t}</span>`).join('');
+      return `
+        <a href="/viewer/${art.id}" class="card">
+          <button class="card-delete" data-id="${art.id}" title="Delete">&times;</button>
+          <div class="card-type">${art.type}</div>
+          <div class="card-title">${esc(art.title)}</div>
+          <div class="card-meta">${art.wordCount} words &middot; ${art.readTimeMin} min read &middot; ${date}</div>
+          ${tags ? `<div class="card-tags">${tags}</div>` : ''}
+        </a>`;
+    }
+
+    function esc(s) {
+      const d = document.createElement('div');
+      d.textContent = s;
+      return d.innerHTML;
+    }
+
+    // ── Upload modal ──
+    const modal = document.getElementById('upload-modal');
+    document.getElementById('btn-upload').addEventListener('click', () => modal.classList.add('active'));
+    document.getElementById('paste-cancel').addEventListener('click', () => modal.classList.remove('active'));
+    document.getElementById('file-cancel').addEventListener('click', () => {
+      modal.classList.remove('active');
+      selectedFile = null;
+    });
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) modal.classList.remove('active');
+    });
+
+    // Tabs
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        tab.classList.add('active');
+        document.querySelector(`.tab-content[data-tab="${tab.dataset.tab}"]`).classList.add('active');
+      });
+    });
+
+    // Paste form
+    document.getElementById('paste-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = e.target.querySelector('button[type="submit"]');
+      const orig = btn.textContent;
+      btn.textContent = 'Creating...';
+      btn.disabled = true;
+
+      try {
+        const fd = new FormData(e.target);
+        const body = {
+          title: fd.get('title'),
+          type: fd.get('type'),
+          content: fd.get('content'),
+          category: fd.get('category'),
+          tags: fd.get('tags') ? fd.get('tags').split(',').map(t => t.trim()) : [],
+        };
+        const res = await fetch(`${API}/artifacts`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        if (!res.ok) throw new Error((await res.text()).slice(0, 100));
+        modal.classList.remove('active');
+        e.target.reset();
+        loadArtifacts();
+      } catch (err) {
+        alert('Failed: ' + err.message);
+        btn.textContent = orig;
+        btn.disabled = false;
+      }
+    });
+
+    document.getElementById('file-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!selectedFile) return;
+
+      const btn = document.getElementById('file-submit');
+      const orig = btn.textContent;
+      btn.textContent = 'Uploading...';
+      btn.disabled = true;
+
+      try {
+        const fileContent = await selectedFile.text();
+        const body = {
+          filename: selectedFile.name,
+          content: fileContent,
+          title: e.target.querySelector('[name="title"]').value || undefined,
+          category: e.target.querySelector('[name="category"]').value || undefined,
+          tags: e.target.querySelector('[name="tags"]').value || undefined,
+        };
+
+        const res = await fetch(`${API}/artifacts/upload`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+
+        if (!res.ok) {
+          const err = await res.text();
+          throw new Error(err);
+        }
+
+        modal.classList.remove('active');
+        e.target.reset();
+        document.getElementById('file-info').style.display = 'none';
+        setSelectedFile(null);
+        loadArtifacts();
+      } catch (err) {
+        btn.textContent = 'Error — try again';
+        btn.disabled = false;
+        console.error('Upload failed:', err);
+        alert('Upload failed: ' + (err.message || 'Unknown error'));
+        setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 3000);
+      }
+    });
+
+    // File drag & drop
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+    dropZone.addEventListener('click', () => fileInput.click());
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      if (e.dataTransfer.files.length) setSelectedFile(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener('change', () => { if (fileInput.files.length) setSelectedFile(fileInput.files[0]); });
+
+    let selectedFile = null;
+    function setSelectedFile(f) {
+      selectedFile = f;
+      const btn = document.getElementById('file-submit');
+      const info = document.getElementById('file-info');
+      if (!f) { info.style.display = 'none'; btn.disabled = true; return; }
+      const ext = f.name.split('.').pop().toUpperCase();
+      info.style.display = 'block';
+      info.textContent = f.name + ' (' + ext + ', ' + (f.size / 1024).toFixed(1) + ' KB)';
+      btn.disabled = false;
+      const titleInput = document.querySelector('.tab-content[data-tab="file"] .form-input[name="title"]');
+      if (titleInput && !titleInput.value) {
+        titleInput.value = f.name.replace(/\.[^.]+$/, '');
+      }
+    }
+
+    // ── Keyboard ──
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modal.classList.contains('active')) {
+        modal.classList.remove('active');
+      }
+    });
+
+    // ── Init ──
+    loadArtifacts();
+  </script>
+</body>
+</html>

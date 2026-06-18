@@ -53,28 +53,39 @@ async function runTests() {
   console.log(">> TEST: Create HTML artifact");
   const htmlArt = await create({
     title: "Test HTML Artifact",
-    slug: "test-html-artifact",
     type: "html",
     content: HTML_CONTENT,
     desc: "A test HTML page with inline CSS and JS",
+    coverImg: "https://example.com/cover.png",
+    category: "tutorials",
     tags: ["test", "html"],
   });
   console.log("  Id: " + htmlArt.id);
+  console.log("  Word count: " + htmlArt.wordCount);
+  console.log("  Read time: " + htmlArt.readTimeMin + " min");
+  console.log("  Slug: " + htmlArt.slug);
+  console.log("  Category: " + htmlArt.category);
   if (!htmlArt.id || htmlArt.type !== "html") throw new Error("Create HTML failed");
+  if (htmlArt.wordCount <= 0) throw new Error("Word count should be > 0");
+  if (htmlArt.readTimeMin <= 0) throw new Error("Read time should be > 0");
+  if (htmlArt.coverImg !== "https://example.com/cover.png") throw new Error("Cover img mismatch");
+  if (htmlArt.category !== "tutorials") throw new Error("Category mismatch");
   console.log("  PASS\n");
 
   // create jsx
   console.log(">> TEST: Create JSX artifact");
   const jsxArt = await create({
     title: "Test JSX Artifact",
-    slug: "test-jsx-artifact",
     type: "jsx",
     content: JSX_CONTENT,
     desc: "A test React component",
     tags: ["test", "jsx", "react"],
   });
   console.log("  Id: " + jsxArt.id);
+  console.log("  Slug: " + jsxArt.slug);
   if (jsxArt.type !== "jsx") throw new Error("Create JSX failed");
+  if (jsxArt.coverImg !== "") throw new Error("Default coverImg should be empty");
+  if (jsxArt.category !== "") throw new Error("Default category should be empty");
   console.log("  PASS\n");
 
   // list after create
@@ -90,6 +101,7 @@ async function runTests() {
   if (!fetched) throw new Error("Artifact not found");
   if (fetched.title !== "Test HTML Artifact") throw new Error("Title mismatch");
   if (!fetched.content.includes("Hello from Leonardo")) throw new Error("Content mismatch");
+  if (fetched.wordCount <= 0) throw new Error("Word count missing");
   console.log("  Fetched: " + fetched.title);
   console.log("  PASS\n");
 
@@ -98,10 +110,12 @@ async function runTests() {
   const updated = await update(htmlArt.id, {
     title: "Updated HTML Artifact",
     tags: ["test", "html", "updated"],
+    category: "notes",
   });
   if (!updated) throw new Error("Update returned null");
   if (updated.title !== "Updated HTML Artifact") throw new Error("Title not updated");
   if (!updated.tags.includes("updated")) throw new Error("Tags not updated");
+  if (updated.category !== "notes") throw new Error("Category not updated");
   console.log("  Updated: " + updated.title);
   console.log("  PASS\n");
 

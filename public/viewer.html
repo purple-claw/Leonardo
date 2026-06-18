@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <title>Viewer - Leonardo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --font-sans: 'Instrument Sans', 'Segoe UI', 'Helvetica', sans-serif; }
+    body { font-family: var(--font-sans); background: #0a0a0a; overflow: hidden; }
+    .bar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.75rem 1.5rem; border-bottom: 1px solid #1f1f1f;
+      background: #111; color: #f5f5f5; height: 56px;
+    }
+    .bar a { color: #f5f5f5; text-decoration: none; font-size: 0.85rem; font-weight: 600; }
+    .bar a:hover { opacity: 0.7; }
+    .bar h3 { font-size: 0.95rem; font-weight: 600; }
+    iframe { width: 100%; height: calc(100vh - 56px); border: none; background: #fff; display: block; }
+  </style>
+</head>
+<body>
+  <div class="bar">
+    <a href="/">&larr; Back</a>
+    <h3 id="title">Artifact</h3>
+    <a id="raw-link" href="#" target="_blank">Open raw</a>
+  </div>
+  <iframe id="viewer" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+  <script>
+    // Global error handler for iframe content loading issues
+    window.addEventListener('message', (e) => {
+      const frame = document.getElementById('viewer');
+      if (e.source === frame.contentWindow && e.data?.type === 'opencode-error') {
+        console.error('Render error:', e.data.error);
+      }
+    });
+
+    const id = location.pathname.split('/').pop();
+    document.getElementById('title').textContent = 'Loading...';
+    document.getElementById('raw-link').href = '/api/render/' + id;
+
+    fetch('/api/artifacts/' + id)
+      .then(r => r.json())
+      .then(a => { document.getElementById('title').textContent = a.title; })
+      .catch(() => {});
+
+    document.getElementById('viewer').src = '/api/render/' + id;
+  </script>
+</body>
+</html>

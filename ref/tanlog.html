@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Translator Analogy: Interactive Diagonalization</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- KaTeX for beautiful Math rendering -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+  
+  <!-- Fonts -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.18/index.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/fira-code@5.0.18/index.min.css">
+  
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    .font-mono { font-family: 'Fira Code', monospace; }
+    
+    .fade-in { animation: fadeIn 0.6s ease-out forwards; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    
+    .grid-line { transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+    .vector-line { transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+    .vector-circle { transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+    
+    .cancel-anim { animation: cancelOut 1.2s ease-in-out forwards; }
+    @keyframes cancelOut {
+      0% { transform: scale(1); opacity: 1; background-color: #fbbf24; color: #1e293b; }
+      40% { transform: scale(1.15); opacity: 1; background-color: #f59e0b; }
+      100% { transform: scale(0); opacity: 0; }
+    }
+
+    .glow-purple { filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.5)); }
+    .glow-green { filter: drop-shadow(0 0 8px rgba(34, 197, 94, 0.5)); }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased">
+
+  <main class="max-w-6xl mx-auto p-6 md:p-12 space-y-12">
+
+    <!-- Header -->
+    <header class="text-center space-y-4">
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-indigo-100 text-indigo-800 rounded-full text-sm font-semibold mb-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path></svg>
+        Linear Algebra Made Simple
+      </div>
+      <h1 class="text-4xl md:text-5xl font-bold text-slate-900 tracking-tight">The Translator Analogy</h1>
+      <p class="text-lg text-slate-600 max-w-3xl mx-auto leading-relaxed">
+        Why is $\mathbf{A} = \mathbf{V}\mathbf{D}\mathbf{V}^{-1}$ the most useful equation in applied math? Because it turns a complicated, messy transformation into simple, independent stretching.
+      </p>
+    </header>
+
+    <!-- Main Interactive Stage -->
+    <section class="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+      
+      <!-- Controls & Step Indicator -->
+      <div class="bg-slate-900 text-white p-4 md:p-6 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+          <div class="bg-indigo-600 w-10 h-10 rounded-lg flex items-center justify-center font-bold text-lg" id="step-number">1</div>
+          <div>
+            <h2 class="text-xl font-bold" id="step-title">The Complicated Reality</h2>
+            <p class="text-slate-400 text-sm" id="step-subtitle">Applying transformation $\mathbf{A}$ directly</p>
+          </div>
+        </div>
+        <div class="flex gap-2 bg-slate-800 p-1 rounded-lg">
+          <button onclick="sim.prev()" id="btn-prev" class="px-4 py-2 rounded-md hover:bg-slate-700 transition disabled:opacity-30 disabled:cursor-not-allowed text-sm font-medium">← Back</button>
+          <button onclick="sim.next()" id="btn-next" class="px-4 py-2 bg-indigo-600 rounded-md hover:bg-indigo-500 transition disabled:opacity-30 disabled:cursor-not-allowed text-sm font-medium">Next Step →</button>
+        </div>
+      </div>
+
+      <div class="grid lg:grid-cols-5 gap-0">
+        
+        <!-- Left: Visualization Canvas -->
+        <div class="lg:col-span-3 bg-slate-50 border-b lg:border-b-0 lg:border-r border-slate-200 p-6 relative min-h-[500px] flex items-center justify-center">
+          <svg id="main-svg" viewBox="0 0 600 500" class="w-full h-full max-w-lg">
+            <defs>
+              <marker id="arrow-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#3b82f6" />
+              </marker>
+              <marker id="arrow-orange" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#f97316" />
+              </marker>
+            </defs>
+
+            <!-- Grid Layer -->
+            <g id="grid-layer"></g>
+
+            <!-- Eigenvector Guides -->
+            <line id="eigen-guide-1" x1="100" y1="400" x2="500" y2="100" stroke="#a855f7" stroke-width="2" stroke-dasharray="6,4" opacity="0" class="transition-opacity duration-500" />
+            <line id="eigen-guide-2" x1="100" y1="100" x2="500" y2="400" stroke="#a855f7" stroke-width="2" stroke-dasharray="6,4" opacity="0" class="transition-opacity duration-500" />
+            <text id="eigen-label-1" x="510" y="95" fill="#a855f7" font-size="13" font-weight="bold" opacity="0" class="transition-opacity duration-500">Direction 1 (stretches 2x)</text>
+            <text id="eigen-label-2" x="510" y="405" fill="#a855f7" font-size="13" font-weight="bold" opacity="0" class="transition-opacity duration-500">Direction 2 (shrinks 0.5x)</text>
+
+            <!-- Original Vector v -->
+            <line id="vec-v-line" x1="300" y1="250" x2="300" y2="250" stroke="#3b82f6" stroke-width="4" marker-end="url(#arrow-blue)" class="vector-line" />
+            <circle id="vec-v-circle" cx="300" cy="250" r="6" fill="#3b82f6" class="vector-circle" />
+            <text id="vec-v-label" x="310" y="240" fill="#3b82f6" font-size="16" font-weight="bold" class="vector-line">v</text>
+
+            <!-- Transformed Vector Av -->
+            <line id="vec-av-line" x1="300" y1="250" x2="300" y2="250" stroke="#f97316" stroke-width="4" marker-end="url(#arrow-orange)" class="vector-line" />
+            <circle id="vec-av-circle" cx="300" cy="250" r="6" fill="#f97316" class="vector-circle" />
+            <text id="vec-av-label" x="310" y="240" fill="#f97316" font-size="16" font-weight="bold" class="vector-line">Av</text>
+
+            <!-- Origin -->
+            <text x="285" y="270" fill="#64748b" font-size="12" font-weight="bold">0</text>
+          </svg>
+
+          <!-- Floating Legend -->
+          <div class="absolute top-4 left-4 bg-white/90 backdrop-blur px-4 py-3 rounded-xl border border-slate-200 shadow-sm text-xs space-y-2">
+            <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-blue-500"></span> Original Vector ($\mathbf{v}$)</div>
+            <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-orange-500"></span> Transformed Vector ($\mathbf{Av}$)</div>
+            <div class="flex items-center gap-2"><span class="w-3 h-0.5 bg-purple-500 border-t border-dashed border-purple-500"></span> "Natural" Directions</div>
+          </div>
+        </div>
+
+        <!-- Right: Explanation & Equation Builder -->
+        <div class="lg:col-span-2 p-6 md:p-8 flex flex-col justify-center space-y-6">
+          
+          <!-- Dynamic Explanation -->
+          <div id="explanation-panel" class="space-y-4 fade-in text-slate-700 leading-relaxed">
+            <!-- Populated by JS -->
+          </div>
+
+          <!-- Equation Builder -->
+          <div class="bg-slate-900 rounded-xl p-5 font-mono text-sm md:text-base shadow-inner border border-slate-700">
+            <div class="text-slate-400 text-xs mb-3 uppercase tracking-wider font-semibold">The Equation</div>
+            <div id="equation-display" class="text-white space-y-2 flex flex-wrap items-center gap-2 justify-center md:justify-start">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+          <!-- Interactive Action Button -->
+          <div id="action-panel" class="hidden">
+            <button id="action-btn" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg transition flex items-center justify-center gap-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              <span id="action-btn-text">Animate Transformation</span>
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- The AI Payoff Section -->
+    <section class="bg-gradient-to-br from-indigo-50 to-blue-50 rounded-2xl p-8 md:p-12 border border-indigo-100">
+      <h3 class="text-2xl font-bold text-slate-900 mb-4 flex items-center gap-3">
+        <svg class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+        Why This Matters: The Power of $\mathbf{A}^{100}$
+      </h3>
+      <p class="text-slate-700 mb-8 leading-relaxed text-lg">
+        In AI, we often apply a transformation over and over (like in deep neural networks or predicting future states). Multiplying a matrix by itself 100 times is incredibly slow. But with diagonalization, it becomes trivial.
+      </p>
+
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 md:p-8">
+        <div class="flex flex-col md:flex-row items-center gap-8">
+          <div class="flex-1 space-y-4 w-full">
+            <label class="block text-sm font-bold text-slate-700">Number of Applications ($k$): <span id="power-val" class="text-indigo-600 text-xl">1</span></label>
+            <input type="range" min="1" max="100" value="1" class="w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600" id="power-slider">
+            <div class="flex justify-between text-xs text-slate-500 font-mono">
+              <span>$k=1$</span>
+              <span>$k=50$</span>
+              <span>$k=100$</span>
+            </div>
+            <p class="text-sm text-slate-600 mt-2 bg-indigo-50 p-3 rounded-lg border border-indigo-100">
+              <strong>Notice:</strong> As $k$ increases, the normal way requires massive matrix multiplication. The diagonal way <em>only</em> requires raising two simple numbers to the power of $k$. Instant computation!
+            </p>
+          </div>
+          
+          <div class="flex-1 bg-slate-900 rounded-xl p-6 font-mono text-sm md:text-base text-white shadow-inner w-full">
+            <div class="text-slate-400 text-xs mb-3 uppercase tracking-wider font-semibold">The Shortcut</div>
+            <div id="power-equation" class="space-y-3">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-orange-400">$\mathbf{A}^1$</span>
+                <span class="text-slate-500">=</span>
+                <span class="text-blue-400">$\mathbf{V}$</span>
+                <span class="text-green-400">$\mathbf{D}^1$</span>
+                <span class="text-blue-400">$\mathbf{V}^{-1}$</span>
+              </div>
+              <div class="mt-4 pt-4 border-t border-slate-700 text-slate-300 text-xs md:text-sm">
+                Standard matrix multiplication.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // --- Initialize KaTeX ---
+    document.addEventListener("DOMContentLoaded", function() {
+      renderMathInElement(document.body, {
+        delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '$', right: '$', display: false}
+        ],
+        throwOnError : false
+      });
+    });
+
+    // --- Math & Coordinate Utilities ---
+    const SCALE = 60; // pixels per unit
+    const ORIGIN_X = 300;
+    const ORIGIN_Y = 250;
+
+    function toScreen(x, y) {
+      return {
+        x: ORIGIN_X + x * SCALE,
+        y: ORIGIN_Y - y * SCALE // Flip Y for standard Cartesian
+      };
+    }
+
+    function multiplyMatrixVector(mat, vec) {
+      return {
+        x: mat[0][0] * vec.x + mat[0][1] * vec.y,
+        y: mat[1][0] * vec.x + mat[1][1] * vec.y
+      };
+    }
+
+    // Our specific matrices for the demo
+    // Eigenvalues: 2 and 0.5. Eigenvectors: [1, 1] and [-1, 1] (normalized)
+    const V = [[0.707, -0.707], [0.707, 0.707]]; // Rotation by 45 deg
+    const V_inv = [[0.707, 0.707], [-0.707, 0.707]]; // Rotation by -45 deg
+    const D = [[2, 0], [0, 0.5]];
+    // A = V * D * V_inv = [[1.25, 0.75], [0.75, 1.25]]
+    const A = [[1.25, 0.75], [0.75, 1.25]];
+
+    // --- State Management ---
+    const state = {
+      step: 0,
+      animating: false,
+      vectorV: { x: 2, y: 1 }, // Start with a nice non-aligned vector
+      currentTransform: 'A' // 'A', 'V_inv', 'D', 'V'
+    };
+
+    const steps = [
+      {
+        title: "The Complicated Reality",
+        subtitle: "Applying transformation $\\mathbf{A}$ directly",
+        text: `<p>Imagine a transformation $\\mathbf{A}$ that does two things at once: it <strong>rotates</strong> and <strong>stretches</strong> space.</p>
+               <p class="mt-3">From our normal viewpoint, this is messy. If we want to apply this transformation 100 times in a row ($\\mathbf{A}^{100}$), calculating it directly requires 99 heavy, complicated matrix multiplications. It's slow and prone to errors.</p>`,
+        equation: `<span class="text-orange-400 font-bold text-lg">$\\mathbf{A}$</span> <span class="text-slate-500">=</span> <span class="text-slate-400">[[1.25, 0.75], [0.75, 1.25]]</span>`,
+        action: { text: "Apply $\\mathbf{A}$ to Vector", target: 'A' }
+      },
+      {
+        title: "Step 1: The Translator In ($\\mathbf{V}^{-1}$)",
+        subtitle: "Changing our perspective to the 'Natural Language'",
+        text: `<p>Imagine you speak English, but a complex math problem is much easier to solve in Spanish. You hire a translator.</p>
+               <p class="mt-3">The matrix $\\mathbf{V}^{-1}$ is that translator. It changes our viewpoint so that the <strong>"natural" directions</strong> (the purple dashed lines, called eigenvectors) line up perfectly with the X and Y axes. </p>
+               <p class="mt-3 font-semibold text-indigo-700">In this new language, the confusing rotation disappears.</p>`,
+        equation: `<span class="text-purple-400 font-bold text-lg">$\\mathbf{V}^{-1}$</span> <span class="text-slate-500">translates</span> <span class="text-blue-400">$\\mathbf{v}$</span>`,
+        action: { text: "Translate to Natural Language", target: 'V_inv' }
+      },
+      {
+        title: "Step 2: The Simple Action ($\\mathbf{D}$)",
+        subtitle: "Pure, independent stretching. No mixing.",
+        text: `<p>Now we apply the matrix $\\mathbf{D}$. Because we are in the "natural" language, $\\mathbf{D}$ does <em>only one simple thing</em>:</p>
+               <ul class="list-disc pl-5 mt-2 space-y-1">
+                 <li>It stretches Direction 1 by a factor of <strong>2</strong>.</li>
+                 <li>It shrinks Direction 2 by a factor of <strong>0.5</strong>.</li>
+               </ul>
+               <p class="mt-3 font-semibold text-green-700">Notice: There is no rotation. No mixing of coordinates. Just simple, independent stretching. This is incredibly easy to compute, even 100 times!</p>`,
+        equation: `<span class="text-green-400 font-bold text-lg">$\\mathbf{D}$</span> <span class="text-slate-500">=</span> <span class="text-slate-400">[[2, 0], [0, 0.5]]</span>`,
+        action: { text: "Apply Simple Scaling ($\\mathbf{D}$)", target: 'D' }
+      },
+      {
+        title: "Step 3: The Translator Out ($\\mathbf{V}$)",
+        subtitle: "Converting back to our normal coordinate system",
+        text: `<p>Finally, the translator $\\mathbf{V}$ converts the result back into our original, familiar coordinate system by rotating the axes back to normal.</p>
+               <p class="mt-3">The final orange vector is <strong>exactly the same</strong> as if we had just applied the messy matrix $\\mathbf{A}$ directly in Step 1. But now we understand <em>how</em> it happened: it was just simple stretching in disguise!</p>`,
+        equation: `<span class="text-blue-400 font-bold text-lg">$\\mathbf{V}$</span> <span class="text-slate-500">translates back</span>`,
+        action: { text: "Translate Back to Normal", target: 'V' }
+      },
+      {
+        title: "The Magic of Cancellation",
+        subtitle: "Why $\\mathbf{A}^2 = \\mathbf{V}\\mathbf{D}^2\\mathbf{V}^{-1}$",
+        text: `<p>What if we apply the transformation twice? We write it as: $(\\mathbf{V}\\mathbf{D}\\mathbf{V}^{-1})(\\mathbf{V}\\mathbf{D}\\mathbf{V}^{-1})$.</p>
+               <p class="mt-3">Look at the middle: $\\mathbf{V}^{-1}\\mathbf{V}$. Translating to Spanish and immediately back to English does <strong>nothing</strong>. They cancel each other out completely, leaving just the Identity.</p>
+               <p class="mt-3 font-semibold text-amber-700">This leaves us with $\\mathbf{V}\\mathbf{D}^2\\mathbf{V}^{-1}$. The messy middle is gone!</p>`,
+        equation: `<span class="text-blue-400">$\\mathbf{V}$</span> <span class="text-green-400">$\\mathbf{D}$</span> <span class="bg-amber-400 text-slate-900 px-2 rounded font-bold inline-block">$\mathbf{V}^{-1} \mathbf{V}$</span> <span class="text-green-400">$\\mathbf{D}$</span> <span class="text-blue-400">$\\mathbf{V}^{-1}$</span>`,
+        action: { text: "Watch them Cancel!", target: 'cancel' }
+      }
+    ];
+
+    // --- DOM Elements ---
+    const svg = document.getElementById('main-svg');
+    const gridLayer = document.getElementById('grid-layer');
+    const vecVLine = document.getElementById('vec-v-line');
+    const vecVCircle = document.getElementById('vec-v-circle');
+    const vecVLabel = document.getElementById('vec-v-label');
+    const vecAvLine = document.getElementById('vec-av-line');
+    const vecAvCircle = document.getElementById('vec-av-circle');
+    const vecAvLabel = document.getElementById('vec-av-label');
+    
+    const eigenGuide1 = document.getElementById('eigen-guide-1');
+    const eigenGuide2 = document.getElementById('eigen-guide-2');
+    const eigenLabel1 = document.getElementById('eigen-label-1');
+    const eigenLabel2 = document.getElementById('eigen-label-2');
+
+    // --- Rendering ---
+    function drawGrid(transform = 'normal') {
+      gridLayer.innerHTML = '';
+      
+      let i_hat = { x: 1, y: 0 };
+      let j_hat = { x: 0, y: 1 };
+
+      if (transform === 'V_inv') {
+        i_hat = multiplyMatrixVector(V_inv, { x: 1, y: 0 });
+        j_hat = multiplyMatrixVector(V_inv, { x: 0, y: 1 });
+      } else if (transform === 'D') {
+        let v_inv_i = multiplyMatrixVector(V_inv, { x: 1, y: 0 });
+        let v_inv_j = multiplyMatrixVector(V_inv, { x: 0, y: 1 });
+        i_hat = { x: v_inv_i.x * 2, y: v_inv_i.y * 2 };
+        j_hat = { x: v_inv_j.x * 0.5, y: v_inv_j.y * 0.5 };
+      } else if (transform === 'V' || transform === 'A') {
+        i_hat = multiplyMatrixVector(A, { x: 1, y: 0 });
+        j_hat = multiplyMatrixVector(A, { x: 0, y: 1 });
+      }
+
+      const gridSize = 6;
+      for (let i = -gridSize; i <= gridSize; i++) {
+        // Lines parallel to j_hat
+        const start1 = { x: i * i_hat.x - gridSize * j_hat.x, y: i * i_hat.y - gridSize * j_hat.y };
+        const end1 = { x: i * i_hat.x + gridSize * j_hat.x, y: i * i_hat.y + gridSize * j_hat.y };
+        const s1 = toScreen(start1.x, start1.y);
+        const e1 = toScreen(end1.x, end1.y);
+        
+        const line1 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line1.setAttribute('x1', s1.x); line1.setAttribute('y1', s1.y);
+        line1.setAttribute('x2', e1.x); line1.setAttribute('y2', e1.y);
+        line1.setAttribute('stroke', i === 0 ? '#475569' : (transform === 'A' ? '#fdba74' : '#e2e8f0'));
+        line1.setAttribute('stroke-width', i === 0 ? '2' : '1');
+        line1.setAttribute('class', 'grid-line');
+        gridLayer.appendChild(line1);
+
+        // Lines parallel to i_hat
+        const start2 = { x: -gridSize * i_hat.x + i * j_hat.x, y: -gridSize * i_hat.y + i * j_hat.y };
+        const end2 = { x: gridSize * i_hat.x + i * j_hat.x, y: gridSize * i_hat.y + i * j_hat.y };
+        const s2 = toScreen(start2.x, start2.y);
+        const e2 = toScreen(end2.x, end2.y);
+        
+        const line2 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line2.setAttribute('x1', s2.x); line2.setAttribute('y1', s2.y);
+        line2.setAttribute('x2', e2.x); line2.setAttribute('y2', e2.y);
+        line2.setAttribute('stroke', i === 0 ? '#475569' : (transform === 'A' ? '#fdba74' : '#e2e8f0'));
+        line2.setAttribute('stroke-width', i === 0 ? '2' : '1');
+        line2.setAttribute('class', 'grid-line');
+        gridLayer.appendChild(line2);
+      }
+    }
+
+    function updateVectors() {
+      let currentV = { ...state.vectorV };
+      let finalAv = { ...state.vectorV };
+
+      if (state.currentTransform === 'V_inv') {
+        currentV = multiplyMatrixVector(V_inv, state.vectorV);
+        finalAv = currentV;
+      } else if (state.currentTransform === 'D') {
+        let v_inv_v = multiplyMatrixVector(V_inv, state.vectorV);
+        currentV = multiplyMatrixVector(D, v_inv_v);
+        finalAv = currentV;
+      } else if (state.currentTransform === 'V') {
+        let dv_inv_v = multiplyMatrixVector(D, multiplyMatrixVector(V_inv, state.vectorV));
+        currentV = multiplyMatrixVector(V, dv_inv_v);
+        finalAv = currentV;
+      } else if (state.currentTransform === 'A') {
+        finalAv = multiplyMatrixVector(A, state.vectorV);
+      }
+
+      const screenV = toScreen(currentV.x, currentV.y);
+      const screenAv = toScreen(finalAv.x, finalAv.y);
+
+      vecVLine.setAttribute('x2', screenV.x);
+      vecVLine.setAttribute('y2', screenV.y);
+      vecVCircle.setAttribute('cx', screenV.x);
+      vecVCircle.setAttribute('cy', screenV.y);
+      vecVLabel.setAttribute('x', screenV.x + 15);
+      vecVLabel.setAttribute('y', screenV.y - 10);
+
+      vecAvLine.setAttribute('x2', screenAv.x);
+      vecAvLine.setAttribute('y2', screenAv.y);
+      vecAvCircle.setAttribute('cx', screenAv.x);
+      vecAvCircle.setAttribute('cy', screenAv.y);
+      vecAvLabel.setAttribute('x', screenAv.x + 15);
+      vecAvLabel.setAttribute('y', screenAv.y - 10);
+    }
+
+    function renderStep() {
+      const step = steps[state.step];
+      
+      document.getElementById('step-number').textContent = state.step + 1;
+      document.getElementById('step-title').textContent = step.title;
+      document.getElementById('step-subtitle').textContent = step.subtitle;
+      
+      const expPanel = document.getElementById('explanation-panel');
+      expPanel.innerHTML = step.text;
+      expPanel.classList.remove('fade-in');
+      void expPanel.offsetWidth; // trigger reflow
+      expPanel.classList.add('fade-in');
+
+      document.getElementById('equation-display').innerHTML = step.equation;
+
+      const actionPanel = document.getElementById('action-panel');
+      if (step.action) {
+        actionPanel.classList.remove('hidden');
+        document.getElementById('action-btn-text').textContent = step.action.text;
+        document.getElementById('action-btn').onclick = () => runAnimation(step.action.target);
+        document.getElementById('action-btn').disabled = false;
+        // Reset button icon
+        document.getElementById('action-btn').innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span id="action-btn-text">${step.action.text}</span>`;
+      } else {
+        actionPanel.classList.add('hidden');
+      }
+
+      document.getElementById('btn-prev').disabled = state.step === 0;
+      document.getElementById('btn-next').disabled = state.step === steps.length - 1;
+
+      state.currentTransform = 'normal';
+      if (state.step === 0) state.currentTransform = 'A';
+      
+      if (state.step >= 1) {
+        eigenGuide1.setAttribute('opacity', '1');
+        eigenGuide2.setAttribute('opacity', '1');
+        eigenLabel1.setAttribute('opacity', '1');
+        eigenLabel2.setAttribute('opacity', '1');
+      } else {
+        eigenGuide1.setAttribute('opacity', '0');
+        eigenGuide2.setAttribute('opacity', '0');
+        eigenLabel1.setAttribute('opacity', '0');
+        eigenLabel2.setAttribute('opacity', '0');
+      }
+
+      drawGrid(state.currentTransform === 'A' ? 'A' : 'normal');
+      updateVectors();
+      
+      // Re-render math in the new content
+      if (window.renderMathInElement) {
+        renderMathInElement(document.getElementById('explanation-panel'), {
+          delimiters: [{left: '$', right: '$', display: false}],
+          throwOnError : false
+        });
+        renderMathInElement(document.getElementById('equation-display'), {
+          delimiters: [{left: '$', right: '$', display: false}],
+          throwOnError : false
+        });
+      }
+    }
+
+    function runAnimation(target) {
+      if (state.animating) return;
+      state.animating = true;
+      const btn = document.getElementById('action-btn');
+      btn.disabled = true;
+      btn.innerHTML = `<svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Processing...`;
+
+      if (target === 'cancel') {
+        const eqDisplay = document.getElementById('equation-display');
+        eqDisplay.innerHTML = `<span class="text-blue-400">$\\mathbf{V}$</span> <span class="text-green-400">$\\mathbf{D}$</span> <span class="bg-amber-400 text-slate-900 px-2 rounded font-bold inline-block cancel-anim">$\\mathbf{V}^{-1} \\mathbf{V}$</span> <span class="text-green-400">$\\mathbf{D}$</span> <span class="text-blue-400">$\\mathbf{V}^{-1}$</span>`;
+        
+        if (window.renderMathInElement) {
+          renderMathInElement(eqDisplay, { delimiters: [{left: '$', right: '$', display: false}], throwOnError : false });
+        }
+
+        setTimeout(() => {
+          eqDisplay.innerHTML = `<span class="text-blue-400">$\\mathbf{V}$</span> <span class="text-green-400 font-bold text-lg glow-green">$\\mathbf{D}^2$</span> <span class="text-blue-400">$\\mathbf{V}^{-1}$</span> <span class="text-slate-400 ml-2 text-sm">← Much simpler!</span>`;
+          if (window.renderMathInElement) {
+            renderMathInElement(eqDisplay, { delimiters: [{left: '$', right: '$', display: false}], throwOnError : false });
+          }
+          state.animating = false;
+          btn.disabled = false;
+          btn.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Reset View`;
+          btn.onclick = () => {
+             renderStep(); // reset
+          };
+        }, 1200);
+        return;
+      }
+
+      const sequence = target === 'A' ? ['A'] : (target === 'V_inv' ? ['V_inv'] : (target === 'D' ? ['V_inv', 'D'] : ['V_inv', 'D', 'V']));
+      let stepIdx = 0;
+
+      function animateNext() {
+        if (stepIdx >= sequence.length) {
+          state.animating = false;
+          btn.disabled = false;
+          btn.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Reset View`;
+          btn.onclick = () => {
+            state.currentTransform = 'normal';
+            drawGrid('normal');
+            updateVectors();
+            btn.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> <span id="action-btn-text">${steps[state.step].action.text}</span>`;
+            btn.onclick = () => runAnimation(steps[state.step].action.target);
+          };
+          return;
+        }
+
+        state.currentTransform = sequence[stepIdx];
+        drawGrid(state.currentTransform === 'A' ? 'A' : 'normal');
+        updateVectors();
+        
+        stepIdx++;
+        setTimeout(animateNext, 1000);
+      }
+
+      animateNext();
+    }
+
+    // --- Simulation Controller ---
+    const sim = {
+      next: () => {
+        if (state.step < steps.length - 1) {
+          state.step++;
+          renderStep();
+        }
+      },
+      prev: () => {
+        if (state.step > 0) {
+          state.step--;
+          renderStep();
+        }
+      }
+    };
+
+    // --- Power Slider Logic ---
+    const powerSlider = document.getElementById('power-slider');
+    const powerVal = document.getElementById('power-val');
+    
+    powerSlider.addEventListener('input', (e) => {
+      const k = parseInt(e.target.value);
+      powerVal.textContent = k;
+      
+      const eq = document.getElementById('power-equation');
+      if (k === 1) {
+        eq.innerHTML = `
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="text-orange-400">$\\mathbf{A}^1$</span>
+            <span class="text-slate-500">=</span>
+            <span class="text-blue-400">$\\mathbf{V}$</span>
+            <span class="text-green-400">$\\mathbf{D}^1$</span>
+            <span class="text-blue-400">$\\mathbf{V}^{-1}$</span>
+          </div>
+          <div class="mt-4 pt-4 border-t border-slate-700 text-slate-300 text-xs md:text-sm">
+            Standard matrix multiplication.
+          </div>`;
+      } else {
+        const lambda1 = Math.pow(2, k);
+        const lambda2 = Math.pow(0.5, k);
+        const l1Str = lambda1 > 10000 ? lambda1.toExponential(2) : lambda1.toFixed(1);
+        const l2Str = lambda2 < 0.001 ? lambda2.toExponential(2) : lambda2.toFixed(4);
+        
+        eq.innerHTML = `
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="text-orange-400">$\\mathbf{A}^{${k}}$</span>
+            <span class="text-slate-500">=</span>
+            <span class="text-blue-400">$\\mathbf{V}$</span>
+            <span class="text-green-400 font-bold glow-green">$\\mathbf{D}^{${k}}$</span>
+            <span class="text-blue-400">$\\mathbf{V}^{-1}$</span>
+          </div>
+          <div class="mt-4 pt-4 border-t border-slate-700 text-slate-300 text-xs md:text-sm space-y-2">
+            <div><span class="text-green-400 font-bold">$\\mathbf{D}^{${k}}$</span> is just:</div>
+            <div class="flex gap-2 flex-wrap">
+              <span class="bg-slate-800 px-2 py-1 rounded border border-slate-700">[ ${l1Str}, 0 ]</span>
+              <span class="bg-slate-800 px-2 py-1 rounded border border-slate-700">[ 0, ${l2Str} ]</span>
+            </div>
+            <div class="text-indigo-400 font-semibold mt-2">
+              → Computation time: Instant, regardless of $k$!
+            </div>
+          </div>`;
+      }
+      
+      if (window.renderMathInElement) {
+        renderMathInElement(eq, { delimiters: [{left: '$', right: '$', display: false}], throwOnError : false });
+      }
+    });
+
+    // --- Initialization ---
+    drawGrid('normal');
+    renderStep();
+
+  </script>
+</body>
+</html>
+

@@ -13,7 +13,11 @@ export interface Artifact {
   type: "html" | "jsx";
   content: string;
   desc: string;
+  coverImg: string;
+  category: string;
   tags: string[];
+  wordCount: number;
+  readTimeMin: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -24,7 +28,11 @@ export interface ArtifactMeta {
   slug: string;
   type: "html" | "jsx";
   desc: string;
+  coverImg: string;
+  category: string;
   tags: string[];
+  wordCount: number;
+  readTimeMin: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -56,6 +64,14 @@ function genId(): string {
 
 function slugify(text: string): string {
   return text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+}
+
+function countWords(text: string): number {
+  return text.split(/\s+/).filter(Boolean).length;
+}
+
+function calcReadTime(wordCount: number): number {
+  return Math.max(1, Math.ceil(wordCount / 200));
 }
 
 // ─── Drive helpers ───────────────────────────────────────────────────────────
@@ -215,15 +231,34 @@ export async function get(id: string): Promise<Artifact | null> {
   return { ...meta, content };
 }
 
-export async function create(data: Omit<Artifact, "id" | "createdAt" | "updatedAt">): Promise<Artifact> {
+export async function create(data: {
+  title: string;
+  type: "html" | "jsx";
+  content: string;
+  desc?: string;
+  slug?: string;
+  coverImg?: string;
+  category?: string;
+  tags?: string[];
+}): Promise<Artifact> {
   const s = loadState();
   const d = await getDrv();
   const now = new Date().toISOString();
+  const wc = countWords(data.content);
+  const rt = calcReadTime(wc);
 
   const art: Artifact = {
     id: genId(),
-    ...data,
+    title: data.title,
     slug: data.slug || slugify(data.title),
+    type: data.type,
+    content: data.content,
+    desc: data.desc || "",
+    coverImg: data.coverImg || "",
+    category: data.category || "",
+    tags: data.tags || [],
+    wordCount: wc,
+    readTimeMin: rt,
     createdAt: now,
     updatedAt: now,
   };
@@ -247,7 +282,16 @@ export async function create(data: Omit<Artifact, "id" | "createdAt" | "updatedA
   return art;
 }
 
-export async function update(id: string, data: Partial<Omit<Artifact, "id" | "createdAt">>): Promise<Artifact | null> {
+export async function update(id: string, data: Partial<{
+  title: string;
+  slug: string;
+  type: "html" | "jsx";
+  content: string;
+  desc: string;
+  coverImg: string;
+  category: string;
+  tags: string[];
+}>): Promise<Artifact | null> {
   const s = loadState();
   const d = await getDrv();
   const existing = await get(id);
@@ -260,6 +304,12 @@ export async function update(id: string, data: Partial<Omit<Artifact, "id" | "cr
     createdAt: existing.createdAt,
     updatedAt: new Date().toISOString(),
   };
+
+  // recompute metadata if content changed
+  if (data.content && data.content !== existing.content) {
+    updated.wordCount = countWords(data.content);
+    updated.readTimeMin = calcReadTime(updated.wordCount);
+  }
 
   saveLocal(id, updated);
 
