@@ -1,0 +1,123 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Leonardo — Font Declarations
+   ═══════════════════════════════════════════════════════════════════════════
+   Place your licensed WOFF2 font files in public/fonts/ and uncomment
+   the @font-face blocks below.  The filenames in src() are conventional
+   — rename them to match your actual files.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Galaxie Copernicus (serif) ─────────────────────────────────────────── */
+/* Foundry: DSType / Chester Jenkins & Kris Sowersby                      */
+/* Weights: Book 400, Medium 500, Semibold 600, Bold 700                  */
+/*
+@font-face {
+  font-family: 'Galaxie Copernicus';
+  src: url('/fonts/galaxie-copernicus-book.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Galaxie Copernicus';
+  src: url('/fonts/galaxie-copernicus-book-italic.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Galaxie Copernicus';
+  src: url('/fonts/galaxie-copernicus-medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Galaxie Copernicus';
+  src: url('/fonts/galaxie-copernicus-semibold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Galaxie Copernicus';
+  src: url('/fonts/galaxie-copernicus-bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+*/
+
+/* ── Tiempos Text (serif) ──────────────────────────────────────────────── */
+/* Foundry: Klim Type Foundry / Kris Sowersby                              */
+/* Weights: Regular 400, Medium 500, Semibold 600, Bold 700                */
+/*
+@font-face {
+  font-family: 'Tiempos Text';
+  src: url('/fonts/tiempos-text-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Tiempos Text';
+  src: url('/fonts/tiempos-text-regular-italic.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Tiempos Text';
+  src: url('/fonts/tiempos-text-medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Tiempos Text';
+  src: url('/fonts/tiempos-text-semibold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Tiempos Text';
+  src: url('/fonts/tiempos-text-bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+*/
+
+/* ── Styrene (sans-serif) ──────────────────────────────────────────────── */
+/* Foundry: Commercial Type / Berton Hasebe                                 */
+/* Weights: Regular 400, Medium 500, Bold 700 (Styrene A or B)             */
+/*
+@font-face {
+  font-family: 'Styrene';
+  src: url('/fonts/styrene-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Styrene';
+  src: url('/fonts/styrene-medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Styrene';
+  src: url('/fonts/styrene-bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+*/
+
+/* ── CSS Custom Properties ──────────────────────────────────────────────── */
+:root {
+  --font-sans: 'Styrene', 'Instrument Sans', 'Segoe UI', 'Helvetica', Arial, sans-serif;
+  --font-serif: 'Galaxie Copernicus', 'Tiempos Text', Georgia, 'Times New Roman', serif;
+  --font-mono: 'IBM Plex Mono', 'SFMono-Regular', 'Menlo', Consolas, monospace;
+}

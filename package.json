@@ -4,29 +4,26 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx src/server/index.ts",
-    "auth": "tsx src/oauth-server.ts",
-    "db:init": "tsx src/db.ts",
-    "db:test": "tsx src/test-db.ts"
+    "dev": "tsx src/server/index.ts"
   },
   "dependencies": {
-    "@react-three/drei": "^9.122.0",
-    "@react-three/fiber": "^8.18.0",
     "@types/node": "^25.9.3",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "esbuild": "^0.28.1",
     "express": "^5.2.1",
-    "google-auth-library": "^10.7.0",
-    "googleapis": "^173.0.0",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "three": "^0.170.0",
+    "highlight.js": "^11.11.1",
+    "lru-cache": "^11.5.1",
+    "markdown-it": "^14.2.0",
+    "sql.js": "^1.14.1",
     "tsx": "^4.22.4",
     "typescript": "^6.0.3"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
-    "@types/express": "^5.0.6"
+    "@types/express": "^5.0.6",
+    "@types/highlight.js": "^9.12.4",
+    "@types/markdown-it": "^14.1.2",
+    "@types/sql.js": "^1.4.11"
   }
 }

@@ -2,7 +2,7 @@ export interface Artifact {
   id: string;
   title: string;
   slug: string;
-  type: "html" | "jsx";
+  type: "html" | "jsx" | "md";
   content: string;
   desc: string;
   coverImg: string;
@@ -18,7 +18,7 @@ export interface ArtifactMeta {
   id: string;
   title: string;
   slug: string;
-  type: "html" | "jsx";
+  type: "html" | "jsx" | "md";
   desc: string;
   coverImg: string;
   category: string;

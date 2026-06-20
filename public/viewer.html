@@ -5,12 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <title>Viewer - Leonardo</title>
+  <link rel="stylesheet" href="/fonts/fonts.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    :root { --font-sans: 'Instrument Sans', 'Segoe UI', 'Helvetica', sans-serif; }
+    :root { --font-sans: 'Styrene', 'Instrument Sans', 'Segoe UI', 'Helvetica', sans-serif; }
     body { font-family: var(--font-sans); background: #0a0a0a; overflow: hidden; }
     .bar {
       display: flex; align-items: center; justify-content: space-between;
@@ -29,26 +30,27 @@
     <h3 id="title">Artifact</h3>
     <a id="raw-link" href="#" target="_blank">Open raw</a>
   </div>
-  <iframe id="viewer" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+  <iframe id="viewer" sandbox="allow-scripts"></iframe>
   <script>
-    // Global error handler for iframe content loading issues
-    window.addEventListener('message', (e) => {
-      const frame = document.getElementById('viewer');
-      if (e.source === frame.contentWindow && e.data?.type === 'opencode-error') {
-        console.error('Render error:', e.data.error);
-      }
-    });
-
     const id = location.pathname.split('/').pop();
     document.getElementById('title').textContent = 'Loading...';
-    document.getElementById('raw-link').href = '/api/render/' + id;
 
     fetch('/api/artifacts/' + id)
       .then(r => r.json())
       .then(a => { document.getElementById('title').textContent = a.title; })
       .catch(() => {});
 
-    document.getElementById('viewer').src = '/api/render/' + id;
+    // Load rendered HTML as srcdoc so the iframe has a unique origin — prevents
+    // malicious artifact code from accessing the parent page (no allow-same-origin).
+    fetch('/api/render/' + id)
+      .then(r => r.text())
+      .then(html => {
+        document.getElementById('viewer').srcdoc = html;
+        document.getElementById('raw-link').href = 'data:text/html,' + encodeURIComponent(html);
+      })
+      .catch(err => {
+        document.getElementById('title').textContent = 'Failed to load';
+      });
   </script>
 </body>
 </html>

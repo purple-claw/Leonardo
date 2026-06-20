@@ -79,12 +79,28 @@ function parseCdnScripts(content: string): { scripts: string[]; links: string[] 
   return { scripts, links };
 }
 
+// Packages known to bundle React internally. Tell esm.sh to externalize React
+// so the browser reuses our pinned React instance — prevents "two Reacts" errors.
+const EXTERNALIZE_REACT = new Set([
+  "@react-three/fiber",
+  "@react-three/drei",
+  "@react-three/xr",
+  "@react-spring/three",
+  "@react-spring/web",
+  "framer-motion",
+  "react-katex",
+]);
+
 function resolvePackage(name: string): ResolvedPkg {
   const version = PACKAGE_VERSIONS[name] || "latest";
   const baseUrl = `https://esm.sh/${name}@${version}`;
-  const url = name === "react" || name === "three"
+  let url = name === "react" || name === "three"
     ? baseUrl
     : `${baseUrl}?deps=${PINNED_ESM_DEPS}`;
+
+  if (EXTERNALIZE_REACT.has(name)) {
+    url += `${url.includes("?") ? "&" : "?"}external=react,react-dom`;
+  }
 
   return {
     name,

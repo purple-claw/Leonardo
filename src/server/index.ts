@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import path from "node:path";
+import { initDB } from "./db.js";
 import { artifactRouter } from "./routes/artifacts.js";
 import { rendererRouter } from "./routes/renderer.js";
 
@@ -18,7 +19,6 @@ const PORT = parseInt(process.env.PORT || "3001", 10);
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));
 
-// No-cache for everything
 app.use((_req, res, next) => {
   res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
   res.setHeader("Pragma", "no-cache");
@@ -44,6 +44,8 @@ app.get("/viewer/:id", (_req, res) => {
   res.sendFile(path.join(publicDir, "viewer.html"));
 });
 
-app.listen(PORT, () => {
-  console.log(`Leonardo running on http://localhost:${PORT}`);
+initDB().then(() => {
+  app.listen(PORT, () => {
+    console.log(`Leonardo running on http://localhost:${PORT}`);
+  });
 });
