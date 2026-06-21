@@ -1,5 +1,5 @@
 import { resolveContent } from "./package-resolver.js";
-import { renderMarkdown } from "./markdown-renderer.js";
+import { parseMarkdownWithMeta } from "./markdown-renderer.js";
 import { transform } from "esbuild";
 import { LRUCache } from "lru-cache";
 import { createHash } from "node:crypto";
@@ -198,6 +198,35 @@ function wrapMarkdown(html: string, title: string): string {
     .footnotes ol { margin-left: 1.2rem; }
     .footnote-ref { font-size: 0.75em; vertical-align: super; }
 
+    /* ── Footnotes ── */
+    .footnotes-sep { margin: 3rem 0 1rem; }
+    .footnotes { font-size: 0.85rem; color: #999; }
+    .footnotes ol { margin-left: 1.2rem; }
+    .footnotes li { margin-bottom: 0.4rem; }
+    .footnote-backref { font-size: 0; }
+    .footnote-backref::before { content: "↩"; font-size: 0.85rem; }
+
+    /* ── Callout / Container blocks ── */
+    .callout {
+      margin: 1.5rem 0; padding: 1rem 1.25rem;
+      border-radius: 12px; border-left: 4px solid;
+      font-size: 0.95rem; line-height: 1.6;
+    }
+    .callout .callout-label {
+      display: block; font-weight: 600; font-size: 0.82rem;
+      text-transform: uppercase; letter-spacing: 0.05em;
+      margin-bottom: 0.4rem;
+    }
+    .callout p:last-child { margin-bottom: 0; }
+    .callout-info    { background: rgba(59,130,246,0.08); border-color: #3b82f6; }
+    .callout-info .callout-label { color: #60a5fa; }
+    .callout-warning { background: rgba(234,179,8,0.08);  border-color: #eab308; }
+    .callout-warning .callout-label { color: #facc15; }
+    .callout-danger  { background: rgba(239,68,68,0.08);  border-color: #ef4444; }
+    .callout-danger .callout-label { color: #f87171; }
+    .callout-tip     { background: rgba(34,197,94,0.08);  border-color: #22c55e; }
+    .callout-tip .callout-label { color: #4ade80; }
+
     @media (max-width: 700px) {
       body { padding: 1.5rem 1rem; font-size: 16px; }
       h1 { font-size: 1.8rem; }
@@ -257,7 +286,8 @@ export async function renderArtifact(options: {
   let html: string;
 
   if (type === "md") {
-    html = wrapMarkdown(renderMarkdown(content), title);
+    const { html: mdHtml } = parseMarkdownWithMeta(content);
+    html = wrapMarkdown(mdHtml, title);
     renderCache.set(ck, html);
     return html;
   }

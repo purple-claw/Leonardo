@@ -12,9 +12,12 @@
     "dotenv": "^17.4.2",
     "esbuild": "^0.28.1",
     "express": "^5.2.1",
+    "gray-matter": "^4.0.3",
     "highlight.js": "^11.11.1",
     "lru-cache": "^11.5.1",
     "markdown-it": "^14.2.0",
+    "markdown-it-container": "^4.0.0",
+    "markdown-it-footnote": "^4.0.0",
     "sql.js": "^1.14.1",
     "tsx": "^4.22.4",
     "typescript": "^6.0.3"
@@ -24,6 +27,8 @@
     "@types/express": "^5.0.6",
     "@types/highlight.js": "^9.12.4",
     "@types/markdown-it": "^14.1.2",
+    "@types/markdown-it-container": "^4.0.0",
+    "@types/markdown-it-footnote": "^3.0.4",
     "@types/sql.js": "^1.4.11"
   }
 }

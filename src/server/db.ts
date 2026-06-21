@@ -284,7 +284,46 @@ export function deleteArtifact(id: string): boolean {
   db.run("DELETE FROM artifacts WHERE id = ?", [id]);
   saveDb();
 
-  // Verify deletion
   const check = db.exec("SELECT COUNT(*) AS c FROM artifacts WHERE id = ?", [id]);
   return !check[0] || check[0].values[0][0] === 0;
+}
+
+// ── Category helpers ──────────────────────────────────────────────────────
+
+export interface CategoryEntry {
+  name: string;
+  count: number;
+}
+
+export function listCategories(): CategoryEntry[] {
+  const results = db.exec(`
+    SELECT category, COUNT(*) AS count
+    FROM artifacts
+    WHERE category != '' AND category IS NOT NULL
+    GROUP BY category
+    ORDER BY count DESC, category ASC
+  `);
+  if (!results[0]) return [];
+  return results[0].values.map((row) => ({
+    name: row[0] as string,
+    count: row[1] as number,
+  }));
+}
+
+export function renameCategory(from: string, to: string): number {
+  db.run("UPDATE artifacts SET category = ?, updated_at = ? WHERE category = ?", [
+    to, new Date().toISOString(), from,
+  ]);
+  saveDb();
+  const check = db.exec("SELECT changes() AS c");
+  return check[0] ? (check[0].values[0][0] as number) : 0;
+}
+
+export function removeCategory(name: string): number {
+  db.run("UPDATE artifacts SET category = '', updated_at = ? WHERE category = ?", [
+    new Date().toISOString(), name,
+  ]);
+  saveDb();
+  const check = db.exec("SELECT changes() AS c");
+  return check[0] ? (check[0].values[0][0] as number) : 0;
 }

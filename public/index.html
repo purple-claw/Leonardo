@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="/fonts/fonts.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -16,43 +16,57 @@
       --bg: #0a0a0a;
       --ink: #f0f0f0;
       --muted: #999;
+      --muted-light: #bbb;
       --line: rgba(255,255,255,0.08);
-      --glass-bg: rgba(255,255,255,0.04);
-      --glass-border: rgba(255,255,255,0.08);
+      --glass-bg: rgba(255,255,255,0.03);
+      --glass-border: rgba(255,255,255,0.06);
       --glass-hover: rgba(255,255,255,0.08);
-      --radius: 18px;
-      --radius-md: 12px;
-      --radius-sm: 8px;
-      --nav-h: 68px;
-      --sidebar-w: 290px;
-      --font-sans: var(--font-sans, 'Instrument Sans', 'Segoe UI', 'Helvetica', Arial, sans-serif);
-      --font-serif: var(--font-serif, Georgia, 'Times New Roman', serif);
-      --font-mono: 'IBM Plex Mono', 'SFMono-Regular', 'Menlo', Consolas, monospace;
+      --glass-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      --glass-inner-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+      --radius: 20px;
+      --radius-md: 14px;
+      --radius-sm: 10px;
+      --bottom-nav-h: 72px;
+      --font-sans: 'Inter', 'Instrument Sans', 'Segoe UI', 'Helvetica', Arial, sans-serif;
+      --font-serif: 'Instrument Sans', Georgia, 'Times New Roman', serif;
+      --font-mono: 'JetBrains Mono', 'IBM Plex Mono', 'SFMono-Regular', 'Menlo', Consolas, monospace;
+      --accent: #3b82f6;
+      --accent-secondary: #06b6d4;
+      --accent-tertiary: #6366f1;
+      --accent-glow: rgba(59,130,246,0.15);
       --ease-expo: cubic-bezier(0.19, 1, 0.22, 1);
       --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+      --ease-out-quad: cubic-bezier(0.25, 0.46, 0.45, 0.94);
     }
 
     [data-theme="light"] {
       --bg: #f8f8f6;
       --ink: #1a1a1a;
       --muted: #888;
+      --muted-light: #666;
       --line: rgba(0,0,0,0.07);
-      --glass-bg: rgba(255,255,255,0.6);
+      --glass-bg: rgba(255,255,255,0.5);
       --glass-border: rgba(0,0,0,0.06);
-      --glass-hover: rgba(255,255,255,0.85);
+      --glass-hover: rgba(255,255,255,0.8);
+      --glass-shadow: 0 8px 32px rgba(0,0,0,0.06);
+      --glass-inner-shadow: inset 0 1px 0 rgba(255,255,255,0.6);
     }
 
-    html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+    html {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      scroll-behavior: smooth;
+    }
 
     body {
       font-family: var(--font-sans);
       background: var(--bg);
       color: var(--ink);
-      line-height: 1.6;
+      line-height: 1.7;
       min-height: 100vh;
       font-size: 18px;
       overflow-x: hidden;
-      transition: background 0.6s var(--ease-expo), color 0.6s var(--ease-expo);
+      transition: background 0.8s var(--ease-expo), color 0.8s var(--ease-expo);
     }
 
     a { color: inherit; text-decoration: none; }
@@ -62,213 +76,45 @@
     /* ── Glass utility ── */
     .glass {
       background: var(--glass-bg);
-      backdrop-filter: blur(24px) saturate(1.2);
-      -webkit-backdrop-filter: blur(24px) saturate(1.2);
+      backdrop-filter: blur(32px) saturate(1.3);
+      -webkit-backdrop-filter: blur(32px) saturate(1.3);
       border: 1px solid var(--glass-border);
       border-radius: var(--radius);
+      box-shadow: var(--glass-shadow), var(--glass-inner-shadow);
     }
 
-    /* ── Navbar ── */
-    .navbar {
+    /* ── Theme toggle (floating) ── */
+    .theme-float {
       position: fixed;
-      top: 0; left: 0; right: 0;
-      height: var(--nav-h);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 24px;
-      background: var(--glass-bg);
-      backdrop-filter: blur(24px) saturate(1.2);
-      -webkit-backdrop-filter: blur(24px) saturate(1.2);
-      border-bottom: 1px solid var(--glass-border);
-      z-index: 50;
-      transition: background 0.6s var(--ease-expo);
-    }
-
-    .nav-left { display: flex; align-items: center; gap: 16px; }
-
-    .hamburger {
-      width: 32px; height: 32px;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 5px;
-      cursor: pointer;
-      position: relative;
-      padding: 4px;
-    }
-
-    .hamburger span {
-      display: block;
-      width: 20px; height: 2px;
-      background: var(--ink);
-      border-radius: 2px;
-      transition: transform 0.5s var(--ease-expo), opacity 0.5s var(--ease-expo), background 0.6s var(--ease-expo);
-      transform-origin: center;
-    }
-
-    .hamburger.active span:nth-child(1) {
-      transform: translateY(7px) rotate(45deg);
-    }
-
-    .hamburger.active span:nth-child(2) {
-      opacity: 0;
-      transform: scaleX(0);
-    }
-
-    .hamburger.active span:nth-child(3) {
-      transform: translateY(-7px) rotate(-45deg);
-    }
-
-    .nav-logo {
-      font-family: var(--font-serif);
-      font-size: 1.3rem;
-      font-weight: 600;
-      letter-spacing: -0.02em;
-      transition: color 0.6s var(--ease-expo);
-    }
-
-    .theme-btn {
+      top: 20px;
+      right: 20px;
       width: 40px; height: 40px;
       display: flex; align-items: center; justify-content: center;
       border-radius: 50%;
+      background: var(--glass-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      z-index: 50;
       transition: background 0.4s var(--ease-expo), transform 0.4s var(--ease-expo);
     }
 
-    .theme-btn:hover {
+    .theme-float:hover {
       background: var(--glass-hover);
       transform: scale(1.1);
     }
 
-    .theme-btn svg {
+    .theme-float svg {
       transition: transform 0.6s var(--ease-spring);
     }
 
-    .theme-btn:hover svg {
+    .theme-float:hover svg {
       transform: rotate(30deg);
-    }
-
-    /* ── Sidebar overlay ── */
-    .sidebar-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.4);
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
-      z-index: 60;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.5s var(--ease-expo);
-    }
-
-    .sidebar-overlay.active {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    /* ── Sidebar ── */
-    .sidebar {
-      position: fixed;
-      top: 0; left: 0;
-      width: var(--sidebar-w);
-      height: 100vh;
-      background: var(--glass-bg);
-      backdrop-filter: blur(32px) saturate(1.3);
-      -webkit-backdrop-filter: blur(32px) saturate(1.3);
-      border-right: 1px solid var(--glass-border);
-      z-index: 70;
-      transform: translateX(-100%);
-      transition: transform 0.6s var(--ease-expo), background 0.6s var(--ease-expo);
-      display: flex;
-      flex-direction: column;
-      overflow-y: auto;
-    }
-
-    .sidebar.open {
-      transform: translateX(0);
-    }
-
-    .sidebar-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 20px 24px;
-      border-bottom: 1px solid var(--glass-border);
-    }
-
-    .sidebar-logo {
-      font-family: var(--font-serif);
-      font-size: 1.4rem;
-      font-weight: 600;
-    }
-
-    .sidebar-close {
-      width: 32px; height: 32px;
-      display: flex; align-items: center; justify-content: center;
-      border-radius: 50%;
-      font-size: 1rem;
-      transition: background 0.3s var(--ease-expo), transform 0.3s var(--ease-expo);
-    }
-
-    .sidebar-close:hover {
-      background: var(--glass-hover);
-      transform: rotate(90deg);
-    }
-
-    .sidebar-nav {
-      padding: 16px 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      flex: 1;
-    }
-
-    .sidebar-item {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      padding: 14px 16px;
-      border-radius: var(--radius-md);
-      font-size: 0.95rem;
-      font-weight: 500;
-      color: var(--muted);
-      transition: all 0.4s var(--ease-expo);
-      cursor: pointer;
-    }
-
-    .sidebar-item svg {
-      flex-shrink: 0;
-      opacity: 0.6;
-      transition: opacity 0.4s var(--ease-expo);
-    }
-
-    .sidebar-item:hover {
-      color: var(--ink);
-      background: var(--glass-bg);
-    }
-
-    .sidebar-item:hover svg {
-      opacity: 1;
-    }
-
-    .sidebar-item.active {
-      color: var(--ink);
-      background: var(--glass-bg);
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
-      border: 1px solid var(--glass-border);
-    }
-
-    .sidebar-item.active svg {
-      opacity: 1;
-    }
-
-    .sidebar-footer {
-      padding: 16px 12px;
-      border-top: 1px solid var(--glass-border);
     }
 
     /* ── Main ── */
     .main {
-      padding-top: var(--nav-h);
+      padding-top: 0;
       min-height: 100vh;
       transition: background 0.6s var(--ease-expo);
     }
@@ -297,123 +143,12 @@
     .view-content {
       max-width: 1200px;
       margin: 0 auto;
-      padding: 40px 32px 80px;
+      padding: 40px 32px calc(40px + var(--bottom-nav-h) + 24px);
     }
 
     @media (max-width: 768px) {
       .view-content {
-        padding: 24px 16px 80px;
-      }
-    }
-
-    /* ── Dashboard: Hero ── */
-    .hero {
-      position: relative;
-      padding: 60px 0 48px;
-      text-align: center;
-      overflow: hidden;
-    }
-
-    .hero::before {
-      content: '';
-      position: absolute;
-      top: -50%; left: -50%;
-      width: 200%; height: 200%;
-      background:
-        radial-gradient(circle at 30% 40%, rgba(255,255,255,0.03) 0%, transparent 50%),
-        radial-gradient(circle at 70% 60%, rgba(255,255,255,0.02) 0%, transparent 50%),
-        conic-gradient(from 0deg at 50% 50%, rgba(255,255,255,0.01), rgba(255,255,255,0.03), rgba(255,255,255,0.01), rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-      animation: liquidRotate 12s linear infinite;
-      pointer-events: none;
-    }
-
-    @keyframes liquidRotate {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    .hero-title {
-      font-family: var(--font-serif);
-      font-size: clamp(2.4rem, 6vw, 4.2rem);
-      font-weight: 700;
-      line-height: 1.15;
-      letter-spacing: -0.03em;
-      margin-bottom: 20px;
-      position: relative;
-      background: linear-gradient(135deg, var(--ink) 0%, rgba(255,255,255,0.4) 25%, var(--ink) 50%, rgba(255,255,255,0.3) 75%, var(--ink) 100%);
-      background-size: 200% 200%;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      animation: shimmerText 8s ease-in-out infinite;
-    }
-
-    @keyframes shimmerText {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
-
-    .hero-subtitle {
-      font-size: 1.1rem;
-      color: var(--muted);
-      max-width: 520px;
-      margin: 0 auto 32px;
-      position: relative;
-      line-height: 1.7;
-    }
-
-    .hero-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 14px 32px;
-      border-radius: 999px;
-      background: var(--glass-bg);
-      backdrop-filter: blur(24px) saturate(1.2);
-      -webkit-backdrop-filter: blur(24px) saturate(1.2);
-      border: 1px solid var(--glass-border);
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: var(--ink);
-      transition: all 0.5s var(--ease-expo);
-      position: relative;
-    }
-
-    .hero-btn:hover {
-      background: var(--glass-hover);
-      transform: translateY(-2px) scale(1.02);
-      border-color: rgba(255,255,255,0.15);
-    }
-
-    .hero-btn:active {
-      transform: translateY(0) scale(0.98);
-    }
-
-    /* ── Dashboard: Recent ── */
-    .section-heading {
-      font-family: var(--font-serif);
-      font-size: 1.8rem;
-      font-weight: 600;
-      margin-bottom: 24px;
-      letter-spacing: -0.02em;
-    }
-
-    .recent-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 20px;
-    }
-
-    @media (max-width: 900px) {
-      .recent-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
-    @media (max-width: 600px) {
-      .recent-grid {
-        grid-template-columns: 1fr;
+        padding: 24px 16px calc(24px + var(--bottom-nav-h) + 16px);
       }
     }
 
@@ -428,11 +163,11 @@
     }
 
     .library-title {
-      font-family: var(--font-serif);
-      font-size: clamp(2rem, 4vw, 2.8rem);
-      font-weight: 700;
+      font-family: var(--font-sans);
+      font-size: clamp(2.5rem, 5vw, 3.5rem);
+      font-weight: 800;
       letter-spacing: -0.03em;
-      line-height: 1.2;
+      line-height: 1.1;
     }
 
     .search-bar {
@@ -496,14 +231,15 @@
     /* ── Cards ── */
     .card {
       position: relative;
-      padding: 24px;
+      padding: 28px;
       border-radius: var(--radius);
       background: var(--glass-bg);
-      backdrop-filter: blur(24px) saturate(1.2);
-      -webkit-backdrop-filter: blur(24px) saturate(1.2);
+      backdrop-filter: blur(32px) saturate(1.3);
+      -webkit-backdrop-filter: blur(32px) saturate(1.3);
       border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow), var(--glass-inner-shadow);
       cursor: pointer;
-      transition: all 0.5s var(--ease-expo);
+      transition: all 0.6s var(--ease-expo);
       display: flex;
       flex-direction: column;
     }
@@ -512,6 +248,7 @@
       transform: translateY(-4px);
       background: var(--glass-hover);
       border-color: rgba(255,255,255,0.12);
+      box-shadow: var(--glass-shadow), var(--glass-inner-shadow), 0 12px 48px rgba(59,130,246,0.06);
     }
 
     .card:active {
@@ -536,10 +273,11 @@
     }
 
     .card-title {
-      font-size: 1.15rem;
-      font-weight: 600;
-      margin-bottom: 8px;
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 10px;
       line-height: 1.3;
+      letter-spacing: -0.01em;
       transition: color 0.4s var(--ease-expo);
     }
 
@@ -838,20 +576,23 @@
     .btn {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      padding: 12px 24px;
+      gap: 10px;
+      padding: 14px 28px;
       border-radius: 999px;
       font-size: 0.9rem;
       font-weight: 600;
-      transition: all 0.4s var(--ease-expo);
+      transition: all 0.5s var(--ease-expo);
       border: 1px solid var(--glass-border);
       background: var(--glass-bg);
+      backdrop-filter: blur(16px);
       color: var(--ink);
+      box-shadow: var(--glass-shadow), var(--glass-inner-shadow);
     }
 
     .btn:hover {
       background: var(--glass-hover);
-      transform: translateY(-1px);
+      transform: translateY(-2px);
+      border-color: rgba(255,255,255,0.1);
     }
 
     .btn:active {
@@ -865,18 +606,21 @@
     }
 
     .btn.primary:hover {
-      opacity: 0.85;
-      transform: translateY(-1px);
+      opacity: 0.9;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
     }
 
     .btn.ghost {
       border-color: transparent;
       background: transparent;
+      box-shadow: none;
     }
 
     .btn.ghost:hover {
       background: var(--glass-bg);
       border-color: var(--glass-border);
+      box-shadow: var(--glass-shadow);
     }
 
     .btn:disabled {
@@ -931,6 +675,21 @@
       animation: viewIn 0.3s var(--ease-expo);
     }
 
+    .type-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+    .type-badge.type-html { background: rgba(59,130,246,0.15); color: #60a5fa; }
+    .type-badge.type-jsx  { background: rgba(234,179,8,0.15);  color: #facc15; }
+    .type-badge.type-md   { background: rgba(34,197,94,0.15);  color: #4ade80; }
+
     /* ── Scrollbar ── */
     ::-webkit-scrollbar {
       width: 6px;
@@ -974,108 +733,1503 @@
         padding: 40px 0 32px;
       }
     }
+
+    /* ════════════════════════════════════════════════════════════
+       BOTTOM NAV
+       ════════════════════════════════════════════════════════════ */
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 6px;
+      padding: 6px 8px;
+      border-radius: 18px;
+      background: rgba(10,10,10,0.75);
+      backdrop-filter: blur(28px) saturate(1.4);
+      -webkit-backdrop-filter: blur(28px) saturate(1.4);
+      border: 1px solid var(--glass-border);
+      z-index: 55;
+      transition: transform 0.5s var(--ease-expo), opacity 0.5s var(--ease-expo);
+      will-change: transform;
+      box-shadow: 0 4px 32px rgba(0,0,0,0.3);
+    }
+
+    [data-theme="light"] .bottom-nav {
+      background: rgba(255,255,255,0.75);
+    }
+
+    .bottom-nav.hidden {
+      transform: translateX(-50%) translateY(calc(100% + 30px));
+      opacity: 0;
+    }
+
+    .nav-icon-card {
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 14px;
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.4s var(--ease-expo);
+      position: relative;
+    }
+
+    .nav-icon-card svg {
+      width: 22px;
+      height: 22px;
+      transition: transform 0.4s var(--ease-expo);
+    }
+
+    .nav-icon-card:hover {
+      color: var(--ink);
+      background: var(--glass-bg);
+    }
+
+    .nav-icon-card:hover svg {
+      transform: scale(1.12);
+    }
+
+    .nav-icon-card.active {
+      color: var(--ink);
+      background: var(--glass-hover);
+    }
+
+    .nav-icon-card.active::after {
+      content: '';
+      position: absolute;
+      bottom: 5px;
+      width: 16px;
+      height: 2px;
+      border-radius: 2px;
+      background: currentColor;
+      opacity: 0.5;
+    }
+
+    .nav-icon-card:active {
+      transform: scale(0.92);
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       CATEGORY MANAGEMENT
+       ════════════════════════════════════════════════════════════ */
+
+    .category-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 24px;
+      align-items: center;
+    }
+
+    .category-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.4s var(--ease-expo);
+    }
+
+    .category-chip:hover {
+      background: var(--glass-hover);
+      color: var(--ink);
+    }
+
+    .category-chip.active {
+      background: var(--glass-hover);
+      border-color: rgba(255,255,255,0.15);
+      color: var(--ink);
+    }
+
+    .category-chip .chip-count {
+      font-size: 0.65rem;
+      font-weight: 500;
+      opacity: 0.5;
+    }
+
+    .category-chip .chip-del {
+      width: 16px; height: 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      font-size: 0.6rem;
+      opacity: 0;
+      transition: all 0.3s var(--ease-expo);
+      margin-left: 2px;
+    }
+
+    .category-chip:hover .chip-del {
+      opacity: 0.5;
+    }
+
+    .category-chip .chip-del:hover {
+      opacity: 1;
+      background: rgba(239,68,68,0.3);
+      color: #ef4444;
+    }
+
+    .category-manage-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--muted);
+      background: var(--glass-bg);
+      border: 1px dashed var(--glass-border);
+      cursor: pointer;
+      transition: all 0.4s var(--ease-expo);
+    }
+
+    .category-manage-btn:hover {
+      color: var(--ink);
+      border-color: rgba(255,255,255,0.15);
+      background: var(--glass-hover);
+    }
+
+    /* ── Library category sections ── */
+    .category-section {
+      margin-bottom: 32px;
+    }
+
+    .category-section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .category-section-title {
+      font-family: var(--font-serif);
+      font-size: 1.2rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .category-section-title .count {
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .category-section-title .empty-cat {
+      font-size: 0.82rem;
+      color: var(--muted);
+      font-weight: 400;
+      font-family: var(--font-sans);
+      font-style: italic;
+    }
+
+    .category-section .library-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    @media (max-width: 1024px) {
+      .category-section .library-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 600px) {
+      .category-section .library-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       CATEGORY MANAGEMENT
+       ════════════════════════════════════════════════════════════ */
+    .cat-modal-inline-form {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .cat-modal-inline-form .form-input {
+      flex: 1;
+      min-width: 160px;
+    }
+
+    .cat-modal-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .cat-modal-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      transition: all 0.4s var(--ease-expo);
+    }
+
+    .cat-modal-row:hover {
+      background: var(--glass-hover);
+    }
+
+    .cat-modal-row .cat-name {
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+
+    .cat-modal-row .cat-meta {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .cat-modal-row .cat-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .cat-modal-row .cat-actions button {
+      width: 32px; height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      font-size: 0.8rem;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      color: var(--muted);
+      transition: all 0.3s var(--ease-expo);
+    }
+
+    .cat-modal-row .cat-actions button:hover {
+      background: var(--glass-hover);
+      color: var(--ink);
+    }
+
+    .cat-modal-row .cat-actions .cat-edit:hover {
+      color: #60a5fa;
+      border-color: rgba(96,165,250,0.3);
+    }
+
+    .cat-modal-row .cat-actions .cat-delete:hover {
+      color: #ef4444;
+      border-color: rgba(239,68,68,0.3);
+    }
+
+    .cat-empty-state {
+      text-align: center;
+      padding: 32px;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    /* ── Category color dots (used in library sections) ── */
+    .scat-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .scat-color-0 { background: #60a5fa; }
+    .scat-color-1 { background: #facc15; }
+    .scat-color-2 { background: #4ade80; }
+    .scat-color-3 { background: #f87171; }
+    .scat-color-4 { background: #c084fc; }
+    .scat-color-5 { background: #fb923c; }
+    .scat-color-6 { background: #22d3ee; }
+    .scat-color-7 { background: #f472b6; }
+
+    /* ════════════════════════════════════════════════════════════
+       ENGINEER'S NOTEBOOK — Full-page Landing
+       ════════════════════════════════════════════════════════════ */
+
+    /* ── @property for animated mesh gradients ── */
+    @property --mesh-1 { syntax: '<percentage>'; initial-value: 20%; inherits: false; }
+    @property --mesh-2 { syntax: '<percentage>'; initial-value: 60%; inherits: false; }
+    @property --mesh-3 { syntax: '<percentage>'; initial-value: 80%; inherits: false; }
+    @property --mesh-4 { syntax: '<percentage>'; initial-value: 30%; inherits: false; }
+    @property --mesh-5 { syntax: '<percentage>'; initial-value: 70%; inherits: false; }
+    @property --mesh-6 { syntax: '<percentage>'; initial-value: 40%; inherits: false; }
+
+    #view-dashboard {
+      position: relative;
+      min-height: 100vh;
+    }
+
+    #view-dashboard::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background:
+        radial-gradient(ellipse at var(--mesh-1) var(--mesh-2), rgba(59,130,246,0.12) 0%, transparent 55%),
+        radial-gradient(ellipse at var(--mesh-3) var(--mesh-4), rgba(6,182,212,0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at var(--mesh-5) var(--mesh-6), rgba(99,102,241,0.1) 0%, transparent 50%),
+        var(--bg);
+      animation: meshShift 30s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate;
+    }
+
+    @keyframes meshShift {
+      0%   { --mesh-1: 20%; --mesh-2: 60%; --mesh-3: 80%; --mesh-4: 30%; --mesh-5: 70%; --mesh-6: 40%; }
+      25%  { --mesh-1: 50%; --mesh-2: 30%; --mesh-3: 40%; --mesh-4: 70%; --mesh-5: 30%; --mesh-6: 60%; }
+      50%  { --mesh-1: 70%; --mesh-2: 50%; --mesh-3: 20%; --mesh-4: 60%; --mesh-5: 50%; --mesh-6: 20%; }
+      75%  { --mesh-1: 40%; --mesh-2: 70%; --mesh-3: 60%; --mesh-4: 20%; --mesh-5: 80%; --mesh-6: 50%; }
+      100% { --mesh-1: 30%; --mesh-2: 40%; --mesh-3: 70%; --mesh-4: 50%; --mesh-5: 20%; --mesh-6: 70%; }
+    }
+
+    [data-theme="light"] #view-dashboard::before {
+      background:
+        radial-gradient(ellipse at var(--mesh-1) var(--mesh-2), rgba(59,130,246,0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at var(--mesh-3) var(--mesh-4), rgba(6,182,212,0.04) 0%, transparent 50%),
+        radial-gradient(ellipse at var(--mesh-5) var(--mesh-6), rgba(99,102,241,0.05) 0%, transparent 50%),
+        var(--bg);
+    }
+
+    /* ── Floating gradient orbs ── */
+    .dash-orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(100px);
+      opacity: 0.25;
+      pointer-events: none;
+      z-index: -1;
+      animation: orbFloat 30s ease-in-out infinite alternate;
+      will-change: transform;
+    }
+
+    .dash-orb:nth-child(1) {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(59,130,246,0.2), transparent);
+      top: -10%; left: -10%;
+      animation-duration: 35s;
+    }
+
+    .dash-orb:nth-child(2) {
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(6,182,212,0.15), transparent);
+      bottom: -15%; right: -5%;
+      animation-duration: 28s;
+      animation-delay: -8s;
+    }
+
+    .dash-orb:nth-child(3) {
+      width: 350px; height: 350px;
+      background: radial-gradient(circle, rgba(99,102,241,0.15), transparent);
+      top: 40%; right: -8%;
+      animation-duration: 32s;
+      animation-delay: -15s;
+    }
+
+    @keyframes orbFloat {
+      0%   { transform: translate(calc(var(--mouse-x-offset, 0px)), calc(var(--mouse-y-offset, 0px))) scale(1); }
+      33%  { transform: translate(calc(60px + var(--mouse-x-offset, 0px)), calc(-40px + var(--mouse-y-offset, 0px))) scale(1.1); }
+      66%  { transform: translate(calc(-30px + var(--mouse-x-offset, 0px)), calc(60px + var(--mouse-y-offset, 0px))) scale(0.95); }
+      100% { transform: translate(calc(40px + var(--mouse-x-offset, 0px)), calc(-20px + var(--mouse-y-offset, 0px))) scale(1.05); }
+    }
+
+    /* ── Scroll progress ── */
+    #scroll-progress {
+      position: fixed;
+      top: 0; left: 0;
+      height: 2px;
+      background: var(--accent);
+      z-index: 60;
+      width: 0%;
+      transition: width 0.1s linear;
+      box-shadow: 0 0 12px var(--accent-glow);
+    }
+
+    /* ── Side anchor nav ── */
+    .eng-anchors {
+      position: fixed;
+      right: 24px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 40;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .eng-anchors a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      transition: color 0.4s var(--ease-expo);
+    }
+
+    .eng-anchors a span {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+      opacity: 0.3;
+      transition: all 0.4s var(--ease-expo);
+    }
+
+    .eng-anchors a:hover,
+    .eng-anchors a.active {
+      color: var(--ink);
+    }
+
+    .eng-anchors a:hover span,
+    .eng-anchors a.active span {
+      opacity: 1;
+      transform: scale(1.3);
+      box-shadow: 0 0 8px var(--accent-glow);
+    }
+
+    .eng-anchors a::after {
+      content: attr(data-label);
+      opacity: 0;
+      transition: opacity 0.4s var(--ease-expo);
+      pointer-events: none;
+    }
+
+    .eng-anchors a:hover::after {
+      opacity: 1;
+    }
+
+    @media (max-width: 768px) {
+      .eng-anchors { display: none; }
+    }
+
+    /* ── Eng wrap ── */
+    .eng-wrap {
+      position: relative;
+      z-index: 1;
+    }
+
+    .eng-section {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 120px 48px;
+      min-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    @media (max-width: 768px) {
+      .eng-section { padding: 80px 24px; }
+    }
+
+    .eng-section-header {
+      font-family: var(--font-sans);
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 48px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .eng-section-header::before {
+      content: '';
+      width: 32px;
+      height: 2px;
+      background: var(--accent);
+      opacity: 0.5;
+    }
+
+    .eng-section-header::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(to right, var(--glass-border), transparent);
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       ~/home — Terminal Hero
+       ════════════════════════════════════════════════════════════ */
+
+    #eng-home {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding-bottom: calc(100px + var(--bottom-nav-h));
+    }
+
+    .eng-prompt {
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+
+    .eng-prompt .prompt-sym {
+      color: #22c55e;
+    }
+
+    .eng-prompt .prompt-path {
+      color: var(--accent);
+    }
+
+    .eng-hero h1 {
+      font-family: var(--font-sans);
+      font-size: clamp(2.8rem, 7vw, 5rem);
+      font-weight: 800;
+      line-height: 1.08;
+      letter-spacing: -0.04em;
+      margin-bottom: 28px;
+      max-width: 900px;
+      background: linear-gradient(135deg, var(--ink) 40%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .eng-hero h1 .accent {
+      background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .eng-hero p {
+      font-family: var(--font-sans);
+      font-size: 1.15rem;
+      color: var(--muted-light);
+      max-width: 600px;
+      line-height: 1.8;
+      margin-bottom: 40px;
+    }
+
+    /* ── Typing animation ── */
+    .eng-focus {
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      margin-bottom: 48px;
+    }
+
+    .eng-focus .focus-label {
+      color: var(--muted);
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      font-size: 0.7rem;
+      opacity: 0.6;
+    }
+
+    .eng-focus .focus-text {
+      color: var(--accent);
+    }
+
+    .eng-focus .cursor {
+      display: inline-block;
+      width: 2px;
+      height: 1.2em;
+      background: var(--accent);
+      animation: blink 1s step-end infinite;
+      margin-left: 2px;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    .eng-hero-actions {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .eng-hero-actions .btn-glow {
+      padding: 16px 36px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      background: var(--accent);
+      border-radius: 999px;
+      border: none;
+      color: #fff;
+      transition: all 0.5s var(--ease-expo);
+    }
+
+    .eng-hero-actions .btn-glow:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(59,130,246,0.3);
+    }
+
+    .eng-hero-actions .btn-ghost-saas {
+      padding: 16px 32px;
+      font-size: 0.85rem;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      border-radius: 999px;
+      border: 1px solid var(--glass-border);
+      background: var(--glass-bg);
+      backdrop-filter: blur(16px);
+      color: var(--ink);
+      transition: all 0.5s var(--ease-expo);
+    }
+
+    .eng-hero-actions .btn-ghost-saas:hover {
+      background: var(--glass-hover);
+      border-color: rgba(255,255,255,0.15);
+      transform: translateY(-2px);
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       ~/projects — The Lab
+       ════════════════════════════════════════════════════════════ */
+
+    .eng-lab-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    .eng-lab-grid .lab-card:first-child {
+      grid-column: 1 / -1;
+    }
+
+    .lab-card {
+      padding: 36px;
+      border-radius: var(--radius);
+      background: var(--glass-bg);
+      backdrop-filter: blur(32px) saturate(1.3);
+      -webkit-backdrop-filter: blur(32px) saturate(1.3);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow), var(--glass-inner-shadow);
+      transition: all 0.6s var(--ease-expo);
+      position: relative;
+      transform-style: preserve-3d;
+      perspective: 800px;
+    }
+
+    .lab-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(135deg, transparent 40%, rgba(59,130,246,0.03) 100%);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.6s var(--ease-expo);
+    }
+
+    .lab-card:hover {
+      background: var(--glass-hover);
+      transform: translateY(-4px);
+      border-color: rgba(255,255,255,0.1);
+      box-shadow: var(--glass-shadow), var(--glass-inner-shadow), 0 12px 48px rgba(59,130,246,0.08);
+    }
+
+    .lab-card:hover::after {
+      opacity: 1;
+    }
+
+    .lab-card-tags {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .lab-card-tags span {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      color: var(--muted);
+    }
+
+    .lab-card h3 {
+      font-family: var(--font-sans);
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      letter-spacing: -0.02em;
+    }
+
+    .lab-card p {
+      font-size: 0.92rem;
+      color: var(--muted-light);
+      line-height: 1.7;
+      margin-bottom: 20px;
+    }
+
+    .lab-card-metrics {
+      display: flex;
+      gap: 20px;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .lab-card-metrics span {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .lab-card-metrics .num {
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    .lab-card .lab-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin-top: 16px;
+      opacity: 0;
+      transform: translateY(4px);
+      transition: all 0.5s var(--ease-expo);
+    }
+
+    .lab-card:hover .lab-link {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 640px) {
+      .eng-lab-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       ~/stack — The Toolkit
+       ════════════════════════════════════════════════════════════ */
+
+    .eng-tk-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .tk-col {
+      padding: 32px;
+      border-radius: var(--radius);
+      background: var(--glass-bg);
+      backdrop-filter: blur(32px) saturate(1.3);
+      -webkit-backdrop-filter: blur(32px) saturate(1.3);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow), var(--glass-inner-shadow);
+    }
+
+    .tk-col-header {
+      font-family: var(--font-sans);
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--accent);
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--glass-border);
+    }
+
+    .tk-category {
+      margin-bottom: 16px;
+    }
+
+    .tk-category-title {
+      font-size: 0.82rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    .tk-category-title .tk-toggle {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--muted);
+      transition: transform 0.4s var(--ease-expo);
+      display: inline-block;
+    }
+
+    .tk-category.open .tk-toggle {
+      transform: rotate(45deg);
+    }
+
+    .tk-items {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 6px;
+    }
+
+    .tk-items span {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      color: var(--muted);
+    }
+
+    .tk-category:not(.open) .tk-items {
+      display: none;
+    }
+
+    @media (max-width: 768px) {
+      .eng-tk-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       ~/log — The Learning Log
+       ════════════════════════════════════════════════════════════ */
+
+    .eng-log-list {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .log-entry {
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      gap: 24px;
+      padding: 20px 0;
+      border-bottom: 1px solid var(--glass-border);
+      transition: background 0.4s var(--ease-expo);
+      border-radius: var(--radius-sm);
+      padding-left: 12px;
+      padding-right: 12px;
+      margin: 0 -12px;
+    }
+
+    .log-entry:hover {
+      background: var(--glass-bg);
+    }
+
+    .log-entry:last-child {
+      border-bottom: none;
+    }
+
+    .log-meta {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    .log-meta .log-date {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .log-meta .log-type {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 0.6rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      border: 1px solid var(--glass-border);
+    }
+
+    .log-type.deep-dive { border-color: rgba(59,130,246,0.3); color: #60a5fa; }
+    .log-type.til { border-color: rgba(34,197,94,0.3); color: #4ade80; }
+    .log-type.failure { border-color: rgba(239,68,68,0.3); color: #f87171; }
+
+    .log-body h4 {
+      font-family: var(--font-sans);
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      letter-spacing: -0.01em;
+      transition: color 0.4s var(--ease-expo);
+    }
+
+    .log-entry:hover .log-body h4 {
+      color: var(--accent);
+    }
+
+    .log-body p {
+      font-size: 0.88rem;
+      color: var(--muted-light);
+      line-height: 1.7;
+    }
+
+    .log-body .log-eta {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-top: 8px;
+      display: inline-block;
+      font-weight: 500;
+    }
+
+    @media (max-width: 600px) {
+      .log-entry { grid-template-columns: 1fr; gap: 8px; }
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       CUSTOM CURSOR
+       ════════════════════════════════════════════════════════════ */
+
+    .cursor-dot {
+      position: fixed; pointer-events: none; z-index: 99999;
+      width: 6px; height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      will-change: transform, width, height;
+    }
+
+    .cursor-ring {
+      position: fixed; pointer-events: none; z-index: 99998;
+      width: 36px; height: 36px;
+      border: 1.5px solid rgba(255,255,255,0.25);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      transition: width 0.4s var(--ease-expo), height 0.4s var(--ease-expo),
+                  border-color 0.4s var(--ease-expo), background 0.4s var(--ease-expo);
+      will-change: transform, width, height;
+    }
+
+    .cursor-ring.hover {
+      width: 56px; height: 56px;
+      border-color: var(--accent);
+      background: rgba(59,130,246,0.08);
+    }
+
+    [data-theme="light"] .cursor-ring {
+      border-color: rgba(0,0,0,0.15);
+    }
+
+    [data-theme="light"] .cursor-ring.hover {
+      border-color: var(--accent);
+      background: rgba(59,130,246,0.06);
+    }
+
+    @media (hover: none) and (pointer: coarse) {
+      .cursor-dot, .cursor-ring { display: none; }
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       NOISE OVERLAY
+       ════════════════════════════════════════════════════════════ */
+
+    .noise-overlay {
+      position: fixed; inset: 0; z-index: 9997;
+      pointer-events: none; opacity: 0.02;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-repeat: repeat;
+      background-size: 256px 256px;
+      mix-blend-mode: overlay;
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       SPOTLIGHT
+       ════════════════════════════════════════════════════════════ */
+
+    #spotlight {
+      position: fixed; top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      pointer-events: none; z-index: 0;
+      opacity: 0;
+      transition: opacity 1s var(--ease-expo);
+      background: radial-gradient(600px circle at 0 0, rgba(59,130,246,0.06), transparent 65%);
+    }
+
+    #spotlight.visible { opacity: 1; }
+
+    /* ════════════════════════════════════════════════════════════
+       SCROLL REVEAL
+       ════════════════════════════════════════════════════════════ */
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.8s var(--ease-expo), transform 0.8s var(--ease-expo);
+    }
+
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    .reveal-scale {
+      opacity: 0;
+      transform: scale(0.95);
+      transition: opacity 0.9s var(--ease-expo), transform 0.9s var(--ease-expo);
+    }
+
+    .reveal-scale.visible { opacity: 1; transform: scale(1); }
+
+    .reveal-children > * {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.7s var(--ease-expo), transform 0.7s var(--ease-expo);
+      transition-delay: calc(var(--i, 0) * 0.08s);
+    }
+
+    .reveal-children.visible > * { opacity: 1; transform: translateY(0); }
+
+    /* ── Override so card hover transforms still work with reveal ── */
+    .lab-card.reveal.visible,
+    .log-entry.reveal.visible {
+      transform: none;
+    }
+    .lab-card.reveal.visible { opacity: 1; }
+    .log-entry.reveal.visible { opacity: 1; }
+
+    /* ════════════════════════════════════════════════════════════
+       GRADIENT BORDER
+       ════════════════════════════════════════════════════════════ */
+
+    @keyframes borderShimmer {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .lab-card.gradient-border {
+      position: relative;
+      background-clip: padding-box;
+      border: 1px solid transparent;
+    }
+
+    .lab-card.gradient-border::before {
+      content: '';
+      position: absolute;
+      inset: -1px; border-radius: inherit;
+      padding: 1px;
+      background: linear-gradient(135deg, rgba(59,130,246,0.4), rgba(6,182,212,0.2), rgba(99,102,241,0.4), rgba(59,130,246,0.2));
+      background-size: 300% 300%;
+      -webkit-mask: linear-gradient(white, white) content-box, linear-gradient(white, white);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      opacity: 0;
+      transition: opacity 0.6s var(--ease-expo);
+      animation: borderShimmer 6s ease infinite;
+    }
+
+    .lab-card.gradient-border:hover::before { opacity: 1; }
+
+    /* ════════════════════════════════════════════════════════════
+       3D TILT BASE
+       ════════════════════════════════════════════════════════════ */
+
+    .lab-card { transform-style: preserve-3d; perspective: 800px; }
+
+    /* ════════════════════════════════════════════════════════════
+       MAGNETIC BUTTON WRAP
+       ════════════════════════════════════════════════════════════ */
+
+    .magnetic-wrap {
+      display: inline-block;
+      transition: transform 0.4s var(--ease-expo);
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       ~/manifesto — First Principles
+       ════════════════════════════════════════════════════════════ */
+
+    .eng-manifesto-body {
+      max-width: 680px;
+    }
+
+    .eng-manifesto-body blockquote {
+      font-family: var(--font-sans);
+      font-size: 1.25rem;
+      font-weight: 600;
+      line-height: 1.6;
+      color: var(--ink);
+      border-left: 3px solid var(--accent);
+      padding-left: 28px;
+      margin-bottom: 28px;
+      letter-spacing: -0.01em;
+    }
+
+    .eng-manifesto-body p {
+      font-size: 1rem;
+      color: var(--muted-light);
+      line-height: 1.8;
+      margin-bottom: 20px;
+      max-width: 700px;
+    }
+
+    .manifesto-current {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 32px;
+      padding: 20px 24px;
+      border-radius: var(--radius-sm);
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+    }
+
+    .manifesto-current .current-label {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      opacity: 0.5;
+    }
+
+    .manifesto-current .current-item {
+      font-size: 0.88rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .manifesto-current .current-item::before {
+      content: '→';
+      font-family: var(--font-mono);
+      color: var(--accent);
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       Footer / CTA
+       ════════════════════════════════════════════════════════════ */
+
+    .eng-footer {
+      text-align: center;
+      padding: 80px 32px calc(80px + var(--bottom-nav-h) + 24px);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .eng-footer h2 {
+      font-family: var(--font-sans);
+      font-size: clamp(1.3rem, 3vw, 2rem);
+      font-weight: 800;
+      margin-bottom: 20px;
+      color: var(--ink);
+      letter-spacing: -0.02em;
+    }
+
+    .eng-footer h2 .accent {
+      background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .eng-footer p {
+      font-size: 1rem;
+      color: var(--muted-light);
+      line-height: 1.8;
+      margin-bottom: 32px;
+      max-width: 480px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .eng-footer-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 40px;
+    }
+
+    .eng-footer-actions .btn-glow {
+      background: var(--accent);
+      padding: 14px 32px;
+      font-size: 0.85rem;
+    }
+
+    .eng-footer-links {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .eng-footer-links a {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--muted);
+      transition: color 0.4s var(--ease-expo);
+    }
+
+    .eng-footer-links a:hover {
+      color: var(--accent);
+    }
+
+    .eng-footer-easter {
+      margin-top: 32px;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--muted);
+      opacity: 0.3;
+    }
+
+    /* ── Recent artifacts in log (replaces old dash-recent) ── */
+    .eng-artifacts-list {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-top: 20px;
+    }
+
+    .eng-artifacts-list .card {
+      padding: 20px;
+    }
+
+    @media (max-width: 700px) {
+      .eng-artifacts-list { grid-template-columns: 1fr; }
+    }
+
+    /* ── View animations ── */
+    .view {
+      display: none;
+      animation: viewIn 0.7s var(--ease-expo);
+    }
+
+    .view.active {
+      display: block;
+    }
+
+    @keyframes viewIn {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
   </style>
 </head>
 <body>
 
-  <!-- ═══ Navbar ═══ -->
-  <nav class="navbar">
-    <div class="nav-left">
-      <div class="hamburger" id="hamburger" aria-label="Toggle sidebar">
-        <span></span>
-        <span></span>
-        <span></span>
-      </div>
-      <span class="nav-logo">Leonardo</span>
-    </div>
-    <button class="theme-btn" id="theme-toggle" aria-label="Toggle theme">
-      <svg id="theme-icon-sun" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-        <circle cx="12" cy="12" r="5"/>
-        <line x1="12" y1="1" x2="12" y2="3"/>
-        <line x1="12" y1="21" x2="12" y2="23"/>
-        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-        <line x1="1" y1="12" x2="3" y2="12"/>
-        <line x1="21" y1="12" x2="23" y2="12"/>
-        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+  <!-- ═══ Scroll progress ═══ -->
+  <div id="scroll-progress"></div>
+
+  <!-- ═══ Custom cursor ═══ -->
+  <div class="cursor-dot" id="cursor-dot"></div>
+  <div class="cursor-ring" id="cursor-ring"></div>
+
+  <!-- ═══ Noise overlay ═══ -->
+  <div class="noise-overlay"></div>
+
+  <!-- ═══ Floating theme toggle ═══ -->
+  <button class="theme-float" id="theme-toggle" aria-label="Toggle theme">
+    <svg id="theme-icon-sun" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <circle cx="12" cy="12" r="5"/>
+      <line x1="12" y1="1" x2="12" y2="3"/>
+      <line x1="12" y1="21" x2="12" y2="23"/>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+      <line x1="1" y1="12" x2="3" y2="12"/>
+      <line x1="21" y1="12" x2="23" y2="12"/>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+    </svg>
+    <svg id="theme-icon-moon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:none">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+    </svg>
+  </button>
+
+  <!-- ═══ Floating gradient orbs ═══ -->
+  <div class="dash-orb"></div>
+  <div class="dash-orb"></div>
+  <div class="dash-orb"></div>
+
+  <!-- ═══ Bottom Nav ═══ -->
+  <nav class="bottom-nav" id="bottom-nav">
+    <button class="nav-icon-card active" data-view="dashboard" aria-label="Dashboard">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7" rx="1"/>
+        <rect x="14" y="3" width="7" height="7" rx="1"/>
+        <rect x="3" y="14" width="7" height="7" rx="1"/>
+        <rect x="14" y="14" width="7" height="7" rx="1"/>
       </svg>
-      <svg id="theme-icon-moon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:none">
-        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+    </button>
+    <button class="nav-icon-card" data-view="library" aria-label="Library">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+        <line x1="8" y1="7" x2="16" y2="7"/>
+        <line x1="8" y1="11" x2="14" y2="11"/>
+      </svg>
+    </button>
+    <button class="nav-icon-card" id="nav-upload" aria-label="Upload">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"/>
+        <polyline points="5 12 12 5 19 12"/>
+      </svg>
+    </button>
+    <button class="nav-icon-card" id="nav-categories" aria-label="Categories">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 4h6v6H4z"/>
+        <path d="M14 4h6v6h-6z"/>
+        <path d="M4 14h6v6H4z"/>
+        <path d="M14 14h6v6h-6z"/>
       </svg>
     </button>
   </nav>
-
-  <!-- ═══ Sidebar Overlay ═══ -->
-  <div class="sidebar-overlay" id="sidebar-overlay"></div>
-
-  <!-- ═══ Sidebar ═══ -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <span class="sidebar-logo">Leonardo</span>
-      <button class="sidebar-close" id="sidebar-close" aria-label="Close sidebar">&times;</button>
-    </div>
-    <nav class="sidebar-nav">
-      <div class="sidebar-item active" data-view="dashboard">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="3" width="7" height="7" rx="1"/>
-          <rect x="14" y="3" width="7" height="7" rx="1"/>
-          <rect x="3" y="14" width="7" height="7" rx="1"/>
-          <rect x="14" y="14" width="7" height="7" rx="1"/>
-        </svg>
-        Dashboard
-      </div>
-      <div class="sidebar-item" data-view="library">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-          <line x1="8" y1="7" x2="16" y2="7"/>
-          <line x1="8" y1="11" x2="14" y2="11"/>
-        </svg>
-        Library
-      </div>
-      <div class="sidebar-item" id="sidebar-upload">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="12" y1="5" x2="12" y2="19"/>
-          <polyline points="5 12 12 5 19 12"/>
-        </svg>
-        Upload
-      </div>
-    </nav>
-    <div class="sidebar-footer">
-      <div style="font-size:0.78rem;color:var(--muted);padding:0 16px;opacity:0.5">
-        <span id="sidebar-count">0 artifacts</span>
-      </div>
-    </div>
-  </aside>
 
   <!-- ═══ Main Content ═══ -->
   <main class="main">
 
     <!-- Dashboard View -->
     <section class="view active" id="view-dashboard">
-      <div class="view-content">
-        <div class="hero">
-          <h1 class="hero-title">Explore your learning artifacts.</h1>
-          <p class="hero-subtitle">Collect, organize, and revisit your code experiments, visualizations, and interactive snippets — all in one place.</p>
-          <button class="hero-btn" id="hero-browse">
-            Browse library
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="5" y1="12" x2="19" y2="12"/>
-              <polyline points="12 5 19 12 12 19"/>
-            </svg>
-          </button>
-        </div>
+      <div id="spotlight"></div>
+      <div class="eng-wrap">
 
-        <section>
-          <h2 class="section-heading">Recent artifacts</h2>
-          <div class="recent-grid" id="recent-grid"></div>
-          <div class="empty" id="dashboard-empty" style="display:none">
-            <div class="empty-icon">+</div>
-            <h3>No artifacts yet</h3>
-            <p>Upload your first HTML or JSX artifact to get started.</p>
+        <!-- Side anchor nav -->
+        <nav class="eng-anchors" id="eng-anchors">
+          <a href="#eng-home" class="active" data-label="~/home"><span></span></a>
+          <a href="#eng-lab" data-label="~/projects"><span></span></a>
+          <a href="#eng-toolkit" data-label="~/stack"><span></span></a>
+          <a href="#eng-log" data-label="~/log"><span></span></a>
+          <a href="#eng-manifesto" data-label="~/manifesto"><span></span></a>
+        </nav>
+
+        <!-- ═══ ~/home — Hero ═══ -->
+        <section id="eng-home" class="eng-section eng-hero">
+          <div class="eng-prompt"><span class="prompt-sym">$</span> <span class="prompt-path">~/home</span> — initializing personal_archive...</div>
+          <h1>Building, breaking, and decoding<br><span class="accent">the physical and digital world.</span></h1>
+          <p>An engineering mind exploring the intersection of software, hardware, and applied science. Documenting the journey from first principles to final deployment.</p>
+          <div class="eng-focus">
+            <span class="focus-label">// current focus:</span>
+            <span class="focus-text" id="typing-text"></span><span class="cursor"></span>
+          </div>
+          <div class="eng-hero-actions">
+            <button class="btn-glow" id="hero-browse">Browse library →</button>
+            <button class="btn-ghost-saas" id="hero-upload">New artifact</button>
           </div>
         </section>
+
+        <!-- ═══ ~/projects — The Lab ═══ -->
+        <section id="eng-lab" class="eng-section eng-lab reveal">
+          <div class="eng-section-header">The Lab (Featured Builds &amp; Research)</div>
+          <div class="eng-lab-grid" id="eng-lab-grid">
+            <!-- populated by JS -->
+          </div>
+        </section>
+
+        <!-- ═══ ~/stack — The Toolkit ═══ -->
+        <section id="eng-toolkit" class="eng-section eng-toolkit reveal">
+          <div class="eng-section-header">The Toolkit (Engineering Stack)</div>
+          <div class="eng-tk-grid reveal-children">
+            <div class="tk-col">
+              <div class="tk-col-header">SOFTWARE &amp; CODE</div>
+              <div class="tk-category open">
+                <div class="tk-category-title"><span class="tk-toggle">+</span> Languages</div>
+                <div class="tk-items"><span>Rust</span><span>Python</span><span>C++</span><span>TypeScript</span><span>Go</span></div>
+              </div>
+              <div class="tk-category">
+                <div class="tk-category-title"><span class="tk-toggle">+</span> Frameworks</div>
+                <div class="tk-items"><span>React</span><span>PyTorch</span><span>ROS2</span><span>Next.js</span><span>Express</span></div>
+              </div>
+              <div class="tk-category">
+                <div class="tk-category-title"><span class="tk-toggle">+</span> Infrastructure</div>
+                <div class="tk-items"><span>Docker</span><span>AWS</span><span>Linux</span><span>Nginx</span><span>PostgreSQL</span></div>
+              </div>
+            </div>
+            <div class="tk-col">
+              <div class="tk-col-header">HARDWARE &amp; ELECTRONICS</div>
+              <div class="tk-category open">
+                <div class="tk-category-title"><span class="tk-toggle">+</span> PCB Design</div>
+                <div class="tk-items"><span>KiCad</span><span>Altium</span><span>Eagle</span></div>
+              </div>
+              <div class="tk-category">
+                <div class="tk-category-title"><span class="tk-toggle">+</span> Prototyping</div>
+                <div class="tk-items"><span>3D Printing</span><span>CNC</span><span>Laser Cutting</span><span>Soldering</span></div>
+              </div>
+              <div class="tk-category">
+                <div class="tk-category-title"><span class="tk-toggle">+</span> Microcontrollers</div>
+                <div class="tk-items"><span>STM32</span><span>ESP32</span><span>FPGA</span><span>AVR</span><span>Raspberry Pi</span></div>
+              </div>
+            </div>
+            <div class="tk-col">
+              <div class="tk-col-header">SCIENCE &amp; RESEARCH</div>
+              <div class="tk-category open">
+                <div class="tk-category-title"><span class="tk-toggle">+</span> Simulation</div>
+                <div class="tk-items"><span>MATLAB</span><span>SPICE</span><span>COMSOL</span><span>Gazebo</span></div>
+              </div>
+              <div class="tk-category">
+                <div class="tk-category-title"><span class="tk-toggle">+</span> Data &amp; Analytics</div>
+                <div class="tk-items"><span>Pandas</span><span>Jupyter</span><span>SQL</span><span>NumPy</span><span>Matplotlib</span></div>
+              </div>
+              <div class="tk-category">
+                <div class="tk-category-title"><span class="tk-toggle">+</span> Mathematics</div>
+                <div class="tk-items"><span>Linear Algebra</span><span>Calculus III</span><span>Stats</span><span>Diff. Eqs</span><span>Graph Theory</span></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══ ~/log — The Learning Log ═══ -->
+        <section id="eng-log" class="eng-section eng-log reveal">
+          <div class="eng-section-header">The Learning Log (Notes, TILs &amp; Deep Dives)</div>
+          <div class="eng-log-list" id="eng-log-list">
+            <!-- populated by JS -->
+          </div>
+          <div class="eng-artifacts-list" id="eng-artifacts-list"></div>
+          <div class="dash-empty" id="dashboard-empty" style="display:none">
+            <div style="font-size:2.5rem;opacity:0.12;margin-bottom:12px">+</div>
+            <h3 style="font-size:1.2rem;font-weight:600;color:var(--ink);margin-bottom:6px">No artifacts yet</h3>
+            <p style="font-size:0.9rem;color:var(--muted)">Upload your first HTML, JSX, or Markdown artifact to get started.</p>
+          </div>
+        </section>
+
+        <!-- ═══ ~/manifesto — First Principles ═══ -->
+        <section id="eng-manifesto" class="eng-section eng-manifesto reveal">
+          <div class="eng-section-header">First Principles (My Philosophy)</div>
+          <div class="eng-manifesto-body">
+            <blockquote>I believe in understanding systems from the ground up. Whether it's writing a custom memory allocator or etching a custom PCB, I prefer to peel back the abstractions.</blockquote>
+            <p>Every project documented here is a step toward deeper comprehension. I don't just copy-paste solutions — I take them apart, understand why they work, and rebuild them better. This archive is the running log of that process: the failures, the breakthroughs, and the first-principles thinking that drives them.</p>
+            <div class="manifesto-current">
+              <div class="current-label">Currently studying</div>
+              <div class="current-item"><em>The Art of Electronics</em> (Horowitz &amp; Hill) — Chapter 5: Op-Amps</div>
+              <div class="current-item">Building a RISC-V CPU in Verilog — pipeline stage 3</div>
+              <div class="current-item"><em>Quantum Mechanics: The Theoretical Minimum</em> — Entanglement</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══ Footer ═══ -->
+        <footer class="eng-footer reveal">
+          <h2><span class="accent">&gt;</span> connection_established. Let's build something.</h2>
+          <p>Have a complex problem, a weird hardware idea, or just want to argue about tabs vs. spaces? My inbox is open.</p>
+          <div class="eng-footer-actions">
+            <button class="btn-glow">Send Transmission</button>
+            <button class="btn-ghost-saas">Download Resume.pdf</button>
+          </div>
+          <div class="eng-footer-links">
+            <a href="#">GitHub</a>
+            <a href="#">arXiv</a>
+            <a href="#">LinkedIn</a>
+            <a href="#">Hackaday</a>
+          </div>
+          <div class="eng-footer-easter">Press Ctrl + ~ to open the site's hidden terminal</div>
+        </footer>
+
       </div>
     </section>
 
@@ -1092,7 +2246,8 @@
             <input class="search-input" id="search-input" type="text" placeholder="Filter by title..." autocomplete="off">
           </div>
         </div>
-        <div class="library-grid" id="library-grid"></div>
+        <div class="category-bar" id="category-bar"></div>
+        <div class="library-sections" id="library-sections"></div>
         <div class="empty" id="library-empty" style="display:none">
           <div class="empty-icon">+</div>
           <h3>No artifacts found</h3>
@@ -1155,9 +2310,9 @@
           <div class="drop-zone" id="drop-zone">
             <div class="drop-icon">+</div>
             <p>Drag &amp; drop a file or click to browse</p>
-            <p class="drop-hint">.html, .htm, .jsx, .tsx</p>
+            <p class="drop-hint">.html, .htm, .jsx, .tsx, .md</p>
           </div>
-          <input type="file" id="file-input" accept=".html,.htm,.jsx,.tsx" hidden>
+          <input type="file" id="file-input" accept=".html,.htm,.jsx,.tsx,.md" hidden>
           <div class="file-info" id="file-info"></div>
           <div class="form-group" style="margin-top:16px">
             <label class="form-label">Title (optional)</label>
@@ -1182,34 +2337,61 @@
     </div>
   </div>
 
+  <!-- ═══ Category Management Modal ═══ -->
+  <div class="modal-overlay" id="category-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title">Manage Categories</h2>
+        <button class="modal-close" id="cat-modal-close">&times;</button>
+      </div>
+      <div class="cat-modal-inline-form" style="margin-bottom:20px">
+        <input class="form-input" id="cat-new-name" placeholder="New category name" style="flex:1;min-width:140px">
+        <button class="btn primary" id="cat-add-btn">Add</button>
+      </div>
+      <div class="cat-modal-list" id="cat-modal-list"></div>
+    </div>
+  </div>
+
   <script>
     const API = '/api';
     let artifacts = [];
+    let categories = [];
+    let selectedCategory = null;
+    const CAT_COLORS = [
+      '#60a5fa', '#facc15', '#4ade80', '#f87171',
+      '#c084fc', '#fb923c', '#22d3ee', '#f472b6'
+    ];
 
     // ── DOM refs ──
     const html = document.documentElement;
     const themeToggle = document.getElementById('theme-toggle');
     const iconSun = document.getElementById('theme-icon-sun');
     const iconMoon = document.getElementById('theme-icon-moon');
-    const hamburger = document.getElementById('hamburger');
-    const sidebar = document.getElementById('sidebar');
-    const sidebarOverlay = document.getElementById('sidebar-overlay');
-    const sidebarClose = document.getElementById('sidebar-close');
-    const sidebarItems = document.querySelectorAll('.sidebar-item[data-view]');
-    const sidebarUpload = document.getElementById('sidebar-upload');
+    const bottomNav = document.getElementById('bottom-nav');
+    const navIconCards = bottomNav.querySelectorAll('.nav-icon-card[data-view]');
+    const navUpload = document.getElementById('nav-upload');
+    const navCategories = document.getElementById('nav-categories');
     const views = {
       dashboard: document.getElementById('view-dashboard'),
       library: document.getElementById('view-library'),
     };
     const heroBrowse = document.getElementById('hero-browse');
-    const recentGrid = document.getElementById('recent-grid');
+    const heroUpload = document.getElementById('hero-upload');
     const dashboardEmpty = document.getElementById('dashboard-empty');
-    const libraryGrid = document.getElementById('library-grid');
+    const engLabGrid = document.getElementById('eng-lab-grid');
+    const engLogList = document.getElementById('eng-log-list');
+    const engArtifactsList = document.getElementById('eng-artifacts-list');
+    const librarySections = document.getElementById('library-sections');
     const libraryEmpty = document.getElementById('library-empty');
+    const categoryBar = document.getElementById('category-bar');
     const searchInput = document.getElementById('search-input');
     const modal = document.getElementById('upload-modal');
     const modalClose = document.getElementById('modal-close');
-    const sidebarCount = document.getElementById('sidebar-count');
+    const catModal = document.getElementById('category-modal');
+    const catModalClose = document.getElementById('cat-modal-close');
+    const catNewName = document.getElementById('cat-new-name');
+    const catAddBtn = document.getElementById('cat-add-btn');
+    const catModalList = document.getElementById('cat-modal-list');
 
     // ── Theme ──
     function applyTheme(theme) {
@@ -1232,42 +2414,17 @@
       applyTheme(current === 'dark' ? 'light' : 'dark');
     });
 
-    // ── Sidebar ──
-    function openSidebar() {
-      sidebar.classList.add('open');
-      sidebarOverlay.classList.add('active');
-      hamburger.classList.add('active');
-    }
-
-    function closeSidebar() {
-      sidebar.classList.remove('open');
-      sidebarOverlay.classList.remove('active');
-      hamburger.classList.remove('active');
-    }
-
-    hamburger.addEventListener('click', () => {
-      if (sidebar.classList.contains('open')) {
-        closeSidebar();
-      } else {
-        openSidebar();
-      }
-    });
-
-    sidebarClose.addEventListener('click', closeSidebar);
-    sidebarOverlay.addEventListener('click', closeSidebar);
-
     // ── View switching ──
     function switchView(name) {
       Object.keys(views).forEach(key => {
         views[key].classList.toggle('active', key === name);
       });
-      sidebarItems.forEach(item => {
+      navIconCards.forEach(item => {
         item.classList.toggle('active', item.dataset.view === name);
       });
-      closeSidebar();
     }
 
-    sidebarItems.forEach(item => {
+    navIconCards.forEach(item => {
       item.addEventListener('click', () => {
         switchView(item.dataset.view);
       });
@@ -1275,10 +2432,107 @@
 
     heroBrowse.addEventListener('click', () => switchView('library'));
 
-    // ── Sidebar upload ──
-    sidebarUpload.addEventListener('click', () => {
-      closeSidebar();
+    // ── Bottom nav upload ──
+    navUpload.addEventListener('click', () => {
       openModal();
+    });
+
+    // ── Bottom nav categories ──
+    navCategories.addEventListener('click', () => {
+      openCatModal();
+    });
+
+    // ── Hero upload ──
+    heroUpload.addEventListener('click', () => openModal());
+
+    // ── Scroll hide/show bottom nav ──
+    let lastScrollY = 0;
+    let scrollTimer;
+    window.addEventListener('scroll', () => {
+      clearTimeout(scrollTimer);
+      const currentY = window.scrollY;
+      if (currentY > lastScrollY && currentY > 80) {
+        bottomNav.classList.add('hidden');
+      } else {
+        bottomNav.classList.remove('hidden');
+      }
+      lastScrollY = currentY;
+      scrollTimer = setTimeout(() => {
+        bottomNav.classList.remove('hidden');
+      }, 2000);
+    });
+
+    // ── Scroll progress bar ──
+    const scrollProgress = document.getElementById('scroll-progress');
+    window.addEventListener('scroll', () => {
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      if (docHeight > 0) {
+        scrollProgress.style.width = `${(window.scrollY / docHeight) * 100}%`;
+      }
+    });
+
+    // ── Anchor nav active tracking ──
+    const engAnchors = document.querySelectorAll('.eng-anchors a');
+    function updateAnchors() {
+      let current = 'eng-home';
+      const sections = document.querySelectorAll('.eng-section');
+      sections.forEach(sec => {
+        const rect = sec.getBoundingClientRect();
+        if (rect.top <= 200) current = sec.id;
+      });
+      engAnchors.forEach(a => {
+        a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+      });
+    }
+    window.addEventListener('scroll', updateAnchors);
+    engAnchors.forEach(a => {
+      a.addEventListener('click', e => {
+        e.preventDefault();
+        document.querySelector(a.getAttribute('href')).scrollIntoView({ behavior: 'smooth' });
+      });
+    });
+
+    // ── Typing animation ──
+    const typingEl = document.getElementById('typing-text');
+    const focuses = [
+      'Learning Rust',
+      'Building a RISC-V CPU',
+      'Studying Quantum Mechanics',
+      'Exploring PCB Design',
+      'Writing a Ray Tracer',
+      'Reverse-engineering protocols',
+    ];
+    let focusIdx = 0;
+    let charIdx = 0;
+    let isDeleting = false;
+
+    function typeTick() {
+      if (!typingEl) return;
+      const current = focuses[focusIdx];
+      if (isDeleting) {
+        charIdx--;
+        typingEl.textContent = current.substring(0, charIdx);
+      } else {
+        charIdx++;
+        typingEl.textContent = current.substring(0, charIdx);
+      }
+      if (!isDeleting && charIdx === current.length) {
+        setTimeout(() => { isDeleting = true; typeTick(); }, 2200);
+        return;
+      }
+      if (isDeleting && charIdx === 0) {
+        isDeleting = false;
+        focusIdx = (focusIdx + 1) % focuses.length;
+      }
+      setTimeout(typeTick, isDeleting ? 25 : 55);
+    }
+    typeTick();
+
+    // ── Toolkit accordion ──
+    document.querySelectorAll('.tk-category-title').forEach(title => {
+      title.addEventListener('click', () => {
+        title.parentElement.classList.toggle('open');
+      });
     });
 
     // ── Fetch ──
@@ -1287,9 +2541,21 @@
         const res = await fetch(`${API}/artifacts`);
         if (!res.ok) throw new Error('Failed to fetch');
         artifacts = await res.json();
+        await loadCategories();
         renderAll();
       } catch (err) {
         console.error(err);
+      }
+    }
+
+    async function loadCategories() {
+      try {
+        const res = await fetch(`${API}/artifacts/categories`);
+        if (!res.ok) throw new Error('Failed to fetch categories');
+        categories = await res.json();
+      } catch (err) {
+        console.error(err);
+        categories = [];
       }
     }
 
@@ -1297,39 +2563,140 @@
     function renderAll() {
       renderDashboard();
       renderLibrary();
-      sidebarCount.textContent = `${artifacts.length} artifact${artifacts.length !== 1 ? 's' : ''}`;
+    }
+
+    function catIndex(name) {
+      const idx = categories.findIndex(c => c.name === name);
+      return idx >= 0 ? idx : 0;
     }
 
     function renderDashboard() {
       const sorted = [...artifacts].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-      const recent = sorted.slice(0, 3);
+      const recent = sorted.slice(0, 6);
 
-      if (recent.length === 0) {
-        recentGrid.innerHTML = '';
-        dashboardEmpty.style.display = 'block';
-        return;
+      // ── Lab cards (top 2 artifacts as featured projects) ──
+      const featured = sorted.slice(0, 3);
+      if (featured.length === 0) {
+        engLabGrid.innerHTML = '<div style="grid-column:1/-1;padding:40px;text-align:center;color:var(--muted);font-size:0.9rem">No featured projects yet. Upload your first artifact.</div>';
+      } else {
+        engLabGrid.innerHTML = featured.map((a, i) => {
+          const tags = (a.tags || []).slice(0, 3).map(t => `<span>${esc(t)}</span>`).join('');
+          const metrics = `<span><span class="num">${a.wordCount || 0}</span> words</span><span><span class="num">${a.readTimeMin || 0}</span> min read</span>`;
+          return `<div class="lab-card">
+            <div class="lab-card-tags"><span>${esc(a.type || 'code')}</span>${tags}</div>
+            <h3>${esc(a.title || 'Untitled')}</h3>
+            <p>${(a.desc || a.content || '').replace(/<[^>]+>/g, '').slice(0, 120)}${a.content && a.content.length > 120 ? '…' : ''}</p>
+            <div class="lab-card-metrics">${metrics}</div>
+            <a href="/viewer/${a.id}" class="lab-link">View project →</a>
+          </div>`;
+        }).join('');
       }
 
-      dashboardEmpty.style.display = 'none';
-      recentGrid.innerHTML = recent.map(a => cardHtml(a, false)).join('');
-      attachCardEvents(recentGrid);
+      // ── Log entries (recent artifacts as blog posts) ──
+      const logEntries = sorted.slice(0, 5);
+      if (logEntries.length === 0) {
+        engLogList.innerHTML = '<div style="padding:40px 0;text-align:center;color:var(--muted);font-size:0.9rem">No log entries yet. Start by uploading a learning artifact.</div>';
+      } else {
+        engLogList.innerHTML = logEntries.map(a => {
+          const date = new Date(a.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+          const type = a.type === 'md' ? 'deep-dive' : a.type === 'jsx' ? 'til' : 'failure';
+          const typeLabel = a.type === 'md' ? 'Deep Dive' : a.type === 'jsx' ? 'TIL' : 'Note';
+          const excerpt = (a.desc || a.content || '').replace(/<[^>]+>/g, '').slice(0, 150);
+          return `<div class="log-entry">
+            <div class="log-meta">
+              <span class="log-date">${date}</span>
+              <span class="log-type ${type}">${typeLabel}</span>
+            </div>
+            <div class="log-body">
+              <a href="/viewer/${a.id}" style="color:inherit;text-decoration:none"><h4>${esc(a.title || 'Untitled')}</h4></a>
+              <p>${esc(excerpt)}${excerpt.length >= 150 ? '…' : ''}</p>
+              <span class="log-eta">${a.readTimeMin || 0} min read</span>
+            </div>
+          </div>`;
+        }).join('');
+      }
+
+      // ── Recent artifacts grid ──
+      if (recent.length === 0) {
+        engArtifactsList.innerHTML = '';
+        dashboardEmpty.style.display = 'block';
+      } else {
+        dashboardEmpty.style.display = 'none';
+        engArtifactsList.innerHTML = recent.map(a => cardHtml(a, false)).join('');
+        attachCardEvents(engArtifactsList);
+      }
+    }
+
+    function renderCategoryBar() {
+      let html = '<button class="category-manage-btn" id="cat-mgr-btn">Manage</button>';
+      html += '<button class="category-chip' + (selectedCategory === null ? ' active' : '') + '" data-cat="">All</button>';
+      const sorted = [...categories].sort((a, b) => b.count - a.count);
+      sorted.forEach(c => {
+        html += '<button class="category-chip' + (selectedCategory === c.name ? ' active' : '') + '" data-cat="' + esc(c.name) + '">'
+          + esc(c.name) + ' <span class="chip-count">' + c.count + '</span></button>';
+      });
+      categoryBar.innerHTML = html;
+
+      categoryBar.querySelectorAll('.category-chip').forEach(el => {
+        el.addEventListener('click', () => {
+          selectedCategory = el.dataset.cat || null;
+          renderLibrary();
+        });
+      });
+
+      const mgrBtn = document.getElementById('cat-mgr-btn');
+      if (mgrBtn) mgrBtn.addEventListener('click', openCatModal);
     }
 
     function renderLibrary() {
       const query = (searchInput.value || '').toLowerCase().trim();
-      const filtered = query
-        ? artifacts.filter(a => (a.title || '').toLowerCase().includes(query))
-        : artifacts;
+
+      let filtered = artifacts;
+      if (query) filtered = filtered.filter(a => (a.title || '').toLowerCase().includes(query));
+      if (selectedCategory) filtered = filtered.filter(a => (a.category || '') === selectedCategory);
+
+      renderCategoryBar();
 
       if (filtered.length === 0) {
-        libraryGrid.innerHTML = '';
+        librarySections.innerHTML = '';
         libraryEmpty.style.display = 'block';
         return;
       }
 
       libraryEmpty.style.display = 'none';
-      libraryGrid.innerHTML = filtered.map(a => cardHtml(a, true)).join('');
-      attachCardEvents(libraryGrid);
+
+      // Group by category
+      const groups = {};
+      filtered.forEach(a => {
+        const cat = a.category || '(uncategorized)';
+        if (!groups[cat]) groups[cat] = [];
+        groups[cat].push(a);
+      });
+
+      const catOrder = Object.keys(groups).sort((a, b) => {
+        if (a === '(uncategorized)') return 1;
+        if (b === '(uncategorized)') return -1;
+        return groups[b].length - groups[a].length;
+      });
+
+      let html = '';
+      catOrder.forEach(cat => {
+        const items = groups[cat];
+        html += '<div class="category-section">';
+        html += '<div class="category-section-header">';
+        html += '<div class="category-section-title">';
+        if (cat !== '(uncategorized)') {
+          html += '<span class="scat-dot scat-color-' + (catIndex(cat) % CAT_COLORS.length) + '" style="display:inline-block"></span>';
+        }
+        html += esc(cat) + ' <span class="count">' + items.length + '</span>';
+        html += '</div></div>';
+        html += '<div class="library-grid">';
+        html += items.map(a => cardHtml(a, true)).join('');
+        html += '</div></div>';
+      });
+
+      librarySections.innerHTML = html;
+      attachCardEvents(librarySections);
     }
 
     function cardHtml(art, showDesc) {
@@ -1368,6 +2735,114 @@
             await loadArtifacts();
           } catch (err) {
             alert('Failed to delete: ' + err.message);
+          }
+        });
+      });
+    }
+
+    // ── Category Modal ──
+    function openCatModal() {
+      renderCatModalList();
+      catModal.classList.add('active');
+    }
+
+    function closeCatModal() {
+      catModal.classList.remove('active');
+      catNewName.value = '';
+    }
+
+    catModalClose.addEventListener('click', closeCatModal);
+    catModal.addEventListener('click', (e) => {
+      if (e.target === catModal) closeCatModal();
+    });
+
+    catAddBtn.addEventListener('click', async () => {
+      const name = catNewName.value.trim().toLowerCase().replace(/\s+/g, '-');
+      if (!name) return;
+      if (categories.some(c => c.name === name)) {
+        alert('Category already exists.');
+        return;
+      }
+      // Create by assigning first artifact or just add to list
+      // Since backend has no create-category endpoint, we need to rename from empty
+      // Use the rename endpoint with a temporary approach
+      if (artifacts.length === 0) {
+        alert('Create an artifact first to add categories.');
+        return;
+      }
+      // Rename the first empty-category artifact to this category
+      const target = artifacts.find(a => !a.category);
+      if (target) {
+        try {
+          const res = await fetch(`${API}/artifacts/${target.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ category: name }),
+          });
+          if (!res.ok) throw new Error('Failed');
+          await loadArtifacts();
+        } catch (err) {
+          alert('Failed to create category: ' + err.message);
+        }
+      } else {
+        alert('No uncategorized artifacts to tag. Upload a new artifact and assign this category.');
+      }
+      catNewName.value = '';
+    });
+
+    async function renderCatModalList() {
+      await loadCategories();
+      if (categories.length === 0) {
+        catModalList.innerHTML = '<div class="cat-empty-state">No categories yet. Add one above.</div>';
+        return;
+      }
+      let html = '';
+      categories.forEach(c => {
+        html += '<div class="cat-modal-row">';
+        html += '<div><div class="cat-name">' + esc(c.name) + '</div><div class="cat-meta">' + c.count + ' artifact' + (c.count !== 1 ? 's' : '') + '</div></div>';
+        html += '<div class="cat-actions">';
+        html += '<button class="cat-rename" data-cat="' + esc(c.name) + '" title="Rename">Rename</button>';
+        html += '<button class="cat-delete" data-cat="' + esc(c.name) + '" title="Delete">Delete</button>';
+        html += '</div></div>';
+      });
+      catModalList.innerHTML = html;
+
+      catModalList.querySelectorAll('.cat-rename').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const old = btn.dataset.cat;
+          const to = prompt('Rename "' + old + '" to:', old);
+          if (!to || to === old) return;
+          const newName = to.trim().toLowerCase().replace(/\s+/g, '-');
+          if (!newName) return;
+          try {
+            const res = await fetch(`${API}/artifacts/category/rename`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ from: old, to: newName }),
+            });
+            if (!res.ok) throw new Error(await res.text());
+            if (selectedCategory === old) selectedCategory = newName;
+            await loadArtifacts();
+            renderCatModalList();
+          } catch (err) {
+            alert('Rename failed: ' + err.message);
+          }
+        });
+      });
+
+      catModalList.querySelectorAll('.cat-delete').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          if (!confirm('Remove category "' + btn.dataset.cat + '" from all artifacts?')) return;
+          try {
+            const res = await fetch(`${API}/artifacts/category/${encodeURIComponent(btn.dataset.cat)}`, {
+              method: 'DELETE',
+            });
+            if (!res.ok) throw new Error(await res.text());
+            if (selectedCategory === btn.dataset.cat) selectedCategory = null;
+            await loadArtifacts();
+            renderCatModalList();
+          } catch (err) {
+            alert('Delete failed: ' + err.message);
           }
         });
       });
@@ -1533,9 +3008,17 @@
         btn.disabled = true;
         return;
       }
-      const ext = f.name.split('.').pop().toUpperCase();
+      const ext = f.name.split('.').pop().toLowerCase();
+      const allowed = ['html', 'htm', 'jsx', 'tsx', 'md'];
+      if (!allowed.includes(ext)) {
+        info.style.display = 'block';
+        info.innerHTML = '<span style="color:#ef4444">Invalid type.</span> Allowed: .html, .htm, .jsx, .tsx, .md';
+        btn.disabled = true;
+        return;
+      }
+      const typeLabel = ext === 'md' ? 'MD' : ext === 'jsx' || ext === 'tsx' ? 'JSX' : 'HTML';
       info.style.display = 'block';
-      info.textContent = f.name + ' (' + ext + ', ' + (f.size / 1024).toFixed(1) + ' KB)';
+      info.innerHTML = `<span class="type-badge type-${typeLabel.toLowerCase()}">${typeLabel}</span> ${f.name} (${(f.size / 1024).toFixed(1)} KB)`;
       btn.disabled = false;
       const titleInput = document.querySelector('.tab-content[data-tab="file"] .form-input[name="title"]');
       if (titleInput && !titleInput.value) {
@@ -1546,9 +3029,216 @@
     // ── Keyboard ──
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
-        if (modal.classList.contains('active')) closeModal();
-        else if (sidebar.classList.contains('open')) closeSidebar();
+        if (catModal.classList.contains('active')) closeCatModal();
+        else if (modal.classList.contains('active')) closeModal();
       }
+    });
+
+    // ════════════════════════════════════════════════════════════
+    // CUSTOM CURSOR — smooth lerp
+    // ════════════════════════════════════════════════════════════
+
+    const cursorDot = document.getElementById('cursor-dot');
+    const cursorRing = document.getElementById('cursor-ring');
+    let mouseX = 0, mouseY = 0;
+    let dotX = 0, dotY = 0;
+    let ringX = 0, ringY = 0;
+
+    document.addEventListener('mousemove', e => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+    });
+
+    function lerpCursor() {
+      dotX += (mouseX - dotX) * 0.28;
+      dotY += (mouseY - dotY) * 0.28;
+      ringX += (mouseX - ringX) * 0.12;
+      ringY += (mouseY - ringY) * 0.12;
+      cursorDot.style.transform = `translate(${dotX}px, ${dotY}px) translate(-50%, -50%)`;
+      cursorRing.style.transform = `translate(${ringX}px, ${ringY}px) translate(-50%, -50%)`;
+      requestAnimationFrame(lerpCursor);
+    }
+    lerpCursor();
+
+    // Hover effect on interactive elements
+    document.querySelectorAll('a, button, .card, .lab-card, .category-chip, .nav-icon-card, .btn, .tk-category-title, .log-entry').forEach(el => {
+      el.addEventListener('mouseenter', () => cursorRing.classList.add('hover'));
+      el.addEventListener('mouseleave', () => cursorRing.classList.remove('hover'));
+    });
+
+    // ════════════════════════════════════════════════════════════
+    // SPOTLIGHT
+    // ════════════════════════════════════════════════════════════
+
+    const spotlight = document.getElementById('spotlight');
+    let spotlightActive = false;
+
+    document.addEventListener('mousemove', e => {
+      const x = (e.clientX / window.innerWidth) * 100;
+      const y = (e.clientY / window.innerHeight) * 100;
+      spotlight.style.background = `radial-gradient(600px circle at ${x}% ${y}%, rgba(59,130,246,0.06), transparent 65%)`;
+      if (!spotlightActive) {
+        spotlightActive = true;
+        spotlight.classList.add('visible');
+      }
+    });
+
+    // ════════════════════════════════════════════════════════════
+    // SCROLL REVEAL — IntersectionObserver
+    // ════════════════════════════════════════════════════════════
+
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+
+    document.querySelectorAll('.reveal, .reveal-scale, .reveal-children').forEach(el => {
+      revealObserver.observe(el);
+    });
+
+    // ════════════════════════════════════════════════════════════
+    // MAGNETIC BUTTONS
+    // ════════════════════════════════════════════════════════════
+
+    document.querySelectorAll('.btn-glow, .btn.primary, .btn-ghost-saas').forEach(btn => {
+      const wrap = document.createElement('span');
+      wrap.className = 'magnetic-wrap';
+      btn.parentNode.insertBefore(wrap, btn);
+      wrap.appendChild(btn);
+
+      wrap.addEventListener('mousemove', e => {
+        const rect = wrap.getBoundingClientRect();
+        const x = e.clientX - rect.left - rect.width / 2;
+        const y = e.clientY - rect.top - rect.height / 2;
+        const dist = Math.sqrt(x * x + y * y);
+        const strength = Math.min(dist, 12);
+        const angle = Math.atan2(y, x);
+        wrap.style.transform = `translate(${Math.cos(angle) * strength * 0.3}px, ${Math.sin(angle) * strength * 0.3}px)`;
+      });
+
+      wrap.addEventListener('mouseleave', () => {
+        wrap.style.transform = '';
+      });
+    });
+
+    // ════════════════════════════════════════════════════════════
+    // CARD 3D TILT
+    // ════════════════════════════════════════════════════════════
+
+    document.addEventListener('mouseover', e => {
+      const card = e.target.closest('.lab-card');
+      if (!card) return;
+      const rect = card.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width;
+      const y = (e.clientY - rect.top) / rect.height;
+      const tiltX = (y - 0.5) * -12;
+      const tiltY = (x - 0.5) * 12;
+      card.style.transform = `perspective(800px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) translateY(-4px)`;
+      card.style.transition = 'transform 0.1s var(--ease-expo)';
+
+      card.addEventListener('mouseleave', () => {
+        card.style.transform = '';
+        card.style.transition = 'transform 0.6s var(--ease-expo)';
+      }, { once: true });
+    });
+
+    // ════════════════════════════════════════════════════════════
+    // GRADIENT BORDER + REVEAL ON DYNAMIC LAB CARDS
+    // ════════════════════════════════════════════════════════════
+
+    const origRenderDashboard = renderDashboard;
+    renderDashboard = function() {
+      origRenderDashboard.call(this);
+      // Add gradient border to first lab card
+      const firstCard = document.querySelector('.eng-lab-grid .lab-card');
+      if (firstCard) firstCard.classList.add('gradient-border');
+      // Observe new lab cards and log entries for reveal
+      document.querySelectorAll('.eng-lab-grid > .lab-card, .log-entry').forEach(el => {
+        if (!el.classList.contains('reveal')) {
+          el.classList.add('reveal');
+          revealObserver.observe(el);
+        }
+      });
+    };
+
+    // ════════════════════════════════════════════════════════════
+    // STAT COUNTER ANIMATION
+    // ════════════════════════════════════════════════════════════
+
+    function animateCounters() {
+      document.querySelectorAll('.stat-counter').forEach(el => {
+        const target = parseInt(el.dataset.target);
+        if (!target || el.dataset.counted) return;
+        el.dataset.counted = '1';
+        const duration = 1500;
+        const start = performance.now();
+        function tick(now) {
+          const p = Math.min((now - start) / duration, 1);
+          const eased = 1 - Math.pow(1 - p, 3);
+          el.textContent = Math.round(eased * target);
+          if (p < 1) requestAnimationFrame(tick);
+          else el.textContent = target;
+        }
+        requestAnimationFrame(tick);
+      });
+    }
+
+    const counterObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          animateCounters();
+          counterObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.5 });
+
+    // ════════════════════════════════════════════════════════════
+    // PARALLAX ORBS — scroll-driven depth
+    // ════════════════════════════════════════════════════════════
+
+    const orbs = document.querySelectorAll('.dash-orb');
+    let orbScrollY = 0;
+    window.addEventListener('scroll', () => {
+      const diff = window.scrollY - orbScrollY;
+      orbScrollY = window.scrollY;
+      orbs.forEach((orb, i) => {
+        const speed = 0.05 + (i + 1) * 0.03;
+        const y = diff * speed;
+        const current = new DOMMatrix(orb.style.transform || 'matrix(1,0,0,1,0,0)');
+        orb.style.transform = `translate(${current.e}px, ${current.f + y}px)`;
+      });
+    }, { passive: true });
+
+    // ════════════════════════════════════════════════════════════
+    // ENHANCED SMOOTH SCROLL — native + JS fallback
+    // ════════════════════════════════════════════════════════════
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', e => {
+        const target = document.querySelector(anchor.getAttribute('href'));
+        if (!target) return;
+        e.preventDefault();
+        const top = target.getBoundingClientRect().top + window.scrollY - 40;
+        window.scrollTo({ top, behavior: 'smooth' });
+      });
+    });
+
+    // ════════════════════════════════════════════════════════════
+    // MOUSE PARALLAX ON MESH BACKGROUND — subtle 3D depth
+    // ════════════════════════════════════════════════════════════
+
+    document.addEventListener('mousemove', e => {
+      const xFactor = (e.clientX / window.innerWidth - 0.5) * 2;
+      const yFactor = (e.clientY / window.innerHeight - 0.5) * 2;
+      orbs.forEach((orb, i) => {
+        const depth = 8 + i * 6;
+        orb.style.setProperty('--mouse-x-offset', `${xFactor * depth}px`);
+        orb.style.setProperty('--mouse-y-offset', `${yFactor * depth}px`);
+      });
     });
 
     // ── Init ──
