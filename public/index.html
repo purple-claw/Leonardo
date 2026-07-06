@@ -1290,7 +1290,7 @@
 
     .eng-hero h1 {
       font-family: var(--font-sans);
-      font-size: clamp(2.8rem, 7vw, 5rem);
+      font-size: clamp(2.4rem, 6.5vw, 4.5rem);
       font-weight: 800;
       line-height: 1.08;
       letter-spacing: -0.04em;
@@ -1395,6 +1395,146 @@
       background: var(--glass-hover);
       border-color: rgba(255,255,255,0.15);
       transform: translateY(-2px);
+    }
+
+    .eng-hero-highlights {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-top: 36px;
+    }
+
+    .hero-highlight {
+      min-width: 140px;
+      padding: 16px 18px;
+      border-radius: var(--radius-sm);
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow), var(--glass-inner-shadow);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+
+    .hero-highlight strong {
+      display: block;
+      font-size: 1.1rem;
+      color: var(--ink);
+      margin-bottom: 6px;
+      font-family: var(--font-sans);
+    }
+
+    .hero-highlight span {
+      font-size: 0.72rem;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .blog-shell {
+      display: grid;
+      grid-template-columns: 1.4fr 0.8fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .blog-feed .eng-lab-grid {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    .blog-sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .newsletter-card,
+    .sidebar-card {
+      padding: 24px;
+      border-radius: var(--radius);
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow), var(--glass-inner-shadow);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+    }
+
+    .newsletter-label,
+    .sidebar-card-label {
+      margin-bottom: 10px;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .newsletter-card h3 {
+      font-size: 1.15rem;
+      margin-bottom: 8px;
+      color: var(--ink);
+    }
+
+    .newsletter-card p,
+    .sidebar-card li {
+      font-size: 0.92rem;
+      color: var(--muted-light);
+      line-height: 1.7;
+    }
+
+    .newsletter-form {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+
+    .newsletter-form input {
+      flex: 1;
+      min-width: 180px;
+      border: 1px solid var(--glass-border);
+      border-radius: 999px;
+      padding: 12px 14px;
+      background: rgba(255,255,255,0.04);
+      color: var(--ink);
+      outline: none;
+    }
+
+    .newsletter-form button {
+      border: none;
+      border-radius: 999px;
+      padding: 12px 16px;
+      background: var(--accent);
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .newsletter-note {
+      display: block;
+      margin-top: 10px;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .sidebar-card ul {
+      margin: 4px 0 0;
+      padding-left: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    @media (max-width: 900px) {
+      .blog-shell { grid-template-columns: 1fr; }
+      .blog-sidebar { order: -1; }
+    }
+
+    @media (max-width: 640px) {
+      .eng-hero-highlights { flex-direction: column; }
+      .newsletter-form { flex-direction: column; }
     }
 
     /* ════════════════════════════════════════════════════════════
@@ -2103,17 +2243,15 @@
         <!-- Side anchor nav -->
         <nav class="eng-anchors" id="eng-anchors">
           <a href="#eng-home" class="active" data-label="~/home"><span></span></a>
-          <a href="#eng-lab" data-label="~/projects"><span></span></a>
-          <a href="#eng-toolkit" data-label="~/stack"><span></span></a>
-          <a href="#eng-log" data-label="~/log"><span></span></a>
-          <a href="#eng-manifesto" data-label="~/manifesto"><span></span></a>
+          <a href="#eng-blog" data-label="~/writing"><span></span></a>
+          <a href="#eng-notes" data-label="~/notes"><span></span></a>
         </nav>
 
         <!-- ═══ ~/home — Hero ═══ -->
         <section id="eng-home" class="eng-section eng-hero">
-          <div class="eng-prompt"><span class="prompt-sym">$</span> <span class="prompt-path">~/home</span> — initializing personal_archive...</div>
-          <h1>Building, breaking, and decoding<br><span class="accent">the physical and digital world.</span></h1>
-          <p>An engineering mind exploring the intersection of software, hardware, and applied science. Documenting the journey from first principles to final deployment.</p>
+          <div class="eng-prompt"><span class="prompt-sym">$</span> <span class="prompt-path">~/home</span> — curated notes and experiments</div>
+          <h1>Writing, building, and sharing ideas<br><span class="accent">with a little more clarity.</span></h1>
+          <p>A calm archive of projects, lessons, and thoughtful notes — designed to feel less like a dashboard and more like a personal journal.</p>
           <div class="eng-focus">
             <span class="focus-label">// current focus:</span>
             <span class="focus-text" id="typing-text"></span><span class="cursor"></span>
@@ -2122,71 +2260,48 @@
             <button class="btn-glow" id="hero-browse">Browse library →</button>
             <button class="btn-ghost-saas" id="hero-upload">New artifact</button>
           </div>
-        </section>
-
-        <!-- ═══ ~/projects — The Lab ═══ -->
-        <section id="eng-lab" class="eng-section eng-lab reveal">
-          <div class="eng-section-header">The Lab (Featured Builds &amp; Research)</div>
-          <div class="eng-lab-grid" id="eng-lab-grid">
-            <!-- populated by JS -->
+          <div class="eng-hero-highlights">
+            <div class="hero-highlight"><strong id="highlight-posts">0</strong><span>Recent posts</span></div>
+            <div class="hero-highlight"><strong id="highlight-notes">0</strong><span>Notes shared</span></div>
+            <div class="hero-highlight"><strong>∞</strong><span>Ideas in motion</span></div>
           </div>
         </section>
 
-        <!-- ═══ ~/stack — The Toolkit ═══ -->
-        <section id="eng-toolkit" class="eng-section eng-toolkit reveal">
-          <div class="eng-section-header">The Toolkit (Engineering Stack)</div>
-          <div class="eng-tk-grid reveal-children">
-            <div class="tk-col">
-              <div class="tk-col-header">SOFTWARE &amp; CODE</div>
-              <div class="tk-category open">
-                <div class="tk-category-title"><span class="tk-toggle">+</span> Languages</div>
-                <div class="tk-items"><span>Rust</span><span>Python</span><span>C++</span><span>TypeScript</span><span>Go</span></div>
-              </div>
-              <div class="tk-category">
-                <div class="tk-category-title"><span class="tk-toggle">+</span> Frameworks</div>
-                <div class="tk-items"><span>React</span><span>PyTorch</span><span>ROS2</span><span>Next.js</span><span>Express</span></div>
-              </div>
-              <div class="tk-category">
-                <div class="tk-category-title"><span class="tk-toggle">+</span> Infrastructure</div>
-                <div class="tk-items"><span>Docker</span><span>AWS</span><span>Linux</span><span>Nginx</span><span>PostgreSQL</span></div>
+        <!-- ═══ ~/writing — Journal ═══ -->
+        <section id="eng-blog" class="eng-section reveal">
+          <div class="eng-section-header">Latest writing</div>
+          <div class="blog-shell">
+            <div class="blog-feed">
+              <div class="eng-lab-grid" id="eng-lab-grid">
+                <!-- populated by JS -->
               </div>
             </div>
-            <div class="tk-col">
-              <div class="tk-col-header">HARDWARE &amp; ELECTRONICS</div>
-              <div class="tk-category open">
-                <div class="tk-category-title"><span class="tk-toggle">+</span> PCB Design</div>
-                <div class="tk-items"><span>KiCad</span><span>Altium</span><span>Eagle</span></div>
+            <aside class="blog-sidebar">
+              <div class="newsletter-card">
+                <div class="newsletter-label">Newsletter</div>
+                <h3>Thoughtful updates, once in a while.</h3>
+                <p>Short notes on experiments, projects, and the ideas I’m turning into something real.</p>
+                <form class="newsletter-form">
+                  <input type="email" placeholder="you@example.com" required>
+                  <button type="submit">Subscribe</button>
+                </form>
+                <span class="newsletter-note">No spam. Just occasional, useful updates.</span>
               </div>
-              <div class="tk-category">
-                <div class="tk-category-title"><span class="tk-toggle">+</span> Prototyping</div>
-                <div class="tk-items"><span>3D Printing</span><span>CNC</span><span>Laser Cutting</span><span>Soldering</span></div>
+              <div class="sidebar-card">
+                <div class="sidebar-card-label">What I’m exploring</div>
+                <ul>
+                  <li>Systems thinking and practical design</li>
+                  <li>Readable documentation and clean interfaces</li>
+                  <li>Quiet, useful tools that feel effortless</li>
+                </ul>
               </div>
-              <div class="tk-category">
-                <div class="tk-category-title"><span class="tk-toggle">+</span> Microcontrollers</div>
-                <div class="tk-items"><span>STM32</span><span>ESP32</span><span>FPGA</span><span>AVR</span><span>Raspberry Pi</span></div>
-              </div>
-            </div>
-            <div class="tk-col">
-              <div class="tk-col-header">SCIENCE &amp; RESEARCH</div>
-              <div class="tk-category open">
-                <div class="tk-category-title"><span class="tk-toggle">+</span> Simulation</div>
-                <div class="tk-items"><span>MATLAB</span><span>SPICE</span><span>COMSOL</span><span>Gazebo</span></div>
-              </div>
-              <div class="tk-category">
-                <div class="tk-category-title"><span class="tk-toggle">+</span> Data &amp; Analytics</div>
-                <div class="tk-items"><span>Pandas</span><span>Jupyter</span><span>SQL</span><span>NumPy</span><span>Matplotlib</span></div>
-              </div>
-              <div class="tk-category">
-                <div class="tk-category-title"><span class="tk-toggle">+</span> Mathematics</div>
-                <div class="tk-items"><span>Linear Algebra</span><span>Calculus III</span><span>Stats</span><span>Diff. Eqs</span><span>Graph Theory</span></div>
-              </div>
-            </div>
+            </aside>
           </div>
         </section>
 
-        <!-- ═══ ~/log — The Learning Log ═══ -->
-        <section id="eng-log" class="eng-section eng-log reveal">
-          <div class="eng-section-header">The Learning Log (Notes, TILs &amp; Deep Dives)</div>
+        <!-- ═══ ~/notes — Recent Log ═══ -->
+        <section id="eng-notes" class="eng-section reveal">
+          <div class="eng-section-header">Recent notes</div>
           <div class="eng-log-list" id="eng-log-list">
             <!-- populated by JS -->
           </div>
@@ -2195,21 +2310,6 @@
             <div style="font-size:2.5rem;opacity:0.12;margin-bottom:12px">+</div>
             <h3 style="font-size:1.2rem;font-weight:600;color:var(--ink);margin-bottom:6px">No artifacts yet</h3>
             <p style="font-size:0.9rem;color:var(--muted)">Upload your first HTML, JSX, or Markdown artifact to get started.</p>
-          </div>
-        </section>
-
-        <!-- ═══ ~/manifesto — First Principles ═══ -->
-        <section id="eng-manifesto" class="eng-section eng-manifesto reveal">
-          <div class="eng-section-header">First Principles (My Philosophy)</div>
-          <div class="eng-manifesto-body">
-            <blockquote>I believe in understanding systems from the ground up. Whether it's writing a custom memory allocator or etching a custom PCB, I prefer to peel back the abstractions.</blockquote>
-            <p>Every project documented here is a step toward deeper comprehension. I don't just copy-paste solutions — I take them apart, understand why they work, and rebuild them better. This archive is the running log of that process: the failures, the breakthroughs, and the first-principles thinking that drives them.</p>
-            <div class="manifesto-current">
-              <div class="current-label">Currently studying</div>
-              <div class="current-item"><em>The Art of Electronics</em> (Horowitz &amp; Hill) — Chapter 5: Op-Amps</div>
-              <div class="current-item">Building a RISC-V CPU in Verilog — pipeline stage 3</div>
-              <div class="current-item"><em>Quantum Mechanics: The Theoretical Minimum</em> — Entanglement</div>
-            </div>
           </div>
         </section>
 
@@ -2445,6 +2545,18 @@
     // ── Hero upload ──
     heroUpload.addEventListener('click', () => openModal());
 
+    const newsletterForm = document.querySelector('.newsletter-form');
+    const newsletterNote = document.querySelector('.newsletter-note');
+    if (newsletterForm && newsletterNote) {
+      newsletterForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const emailInput = newsletterForm.querySelector('input[type="email"]');
+        if (!emailInput || !emailInput.value.trim()) return;
+        newsletterNote.textContent = `Thanks, ${emailInput.value.trim()} — you're on the list.`;
+        newsletterForm.reset();
+      });
+    }
+
     // ── Scroll hide/show bottom nav ──
     let lastScrollY = 0;
     let scrollTimer;
@@ -2573,6 +2685,10 @@
     function renderDashboard() {
       const sorted = [...artifacts].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       const recent = sorted.slice(0, 6);
+      const highlightPosts = document.getElementById('highlight-posts');
+      const highlightNotes = document.getElementById('highlight-notes');
+      if (highlightPosts) highlightPosts.textContent = Math.min(sorted.length, 9);
+      if (highlightNotes) highlightNotes.textContent = Math.min(sorted.length, 24);
 
       // ── Lab cards (top 2 artifacts as featured projects) ──
       const featured = sorted.slice(0, 3);
