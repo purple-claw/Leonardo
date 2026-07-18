@@ -1,3 +1,4 @@
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -5,6 +6,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'models.dart';
 import 'render_service.dart';
 import 'ui_utils.dart';
+import 'glass_theme.dart';
 
 class ArtifactViewerPage extends StatefulWidget {
   static const routeName = '/viewer';
@@ -88,11 +90,14 @@ class _ArtifactViewerPageState extends State<ArtifactViewerPage> {
     final art = widget.artifact;
 
     return Scaffold(
+      backgroundColor: kBgPureBlack,
       appBar: AppBar(
-        title: Text(art.title),
+        backgroundColor: kBgNearBlack,
+        title: Text(art.title, style: const TextStyle(color: kWhite)),
+        iconTheme: const IconThemeData(color: kWhite70),
         actions: [
           IconButton(
-            icon: const Icon(Icons.copy_outlined),
+            icon: const Icon(Icons.copy_outlined, color: kWhite54),
             tooltip: 'Copy content',
             onPressed: _copyContent,
           ),
@@ -112,28 +117,25 @@ class _ArtifactViewerPageState extends State<ArtifactViewerPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            CircularProgressIndicator(color: Color(0xFFDC143C)),
+            CircularProgressIndicator(color: kCrimson),
             SizedBox(height: 12),
-            Text('Rendering...', style: TextStyle(color: Colors.white54, fontSize: 14)),
+            Text('Rendering...', style: TextStyle(color: kWhite54, fontSize: 14)),
           ],
         ),
       );
     }
 
-    // WebView rendering (all content types go through WebView for
-    // consistent KaTeX + highlight.js support)
     if (_renderResult!.needsWebView) {
       return _buildWebViewPreview();
     }
 
-    // Fallback: render as rich text
     return _buildFallbackView();
   }
 
   Widget _buildWebViewPreview() {
     if (_webViewController == null) {
       return const Center(
-        child: CircularProgressIndicator(color: Color(0xFFDC143C)),
+        child: CircularProgressIndicator(color: kCrimson),
       );
     }
 
@@ -145,9 +147,9 @@ class _ArtifactViewerPageState extends State<ArtifactViewerPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                CircularProgressIndicator(color: Color(0xFFDC143C)),
+                CircularProgressIndicator(color: kCrimson),
                 SizedBox(height: 12),
-                Text('Loading preview...', style: TextStyle(color: Colors.white54, fontSize: 14)),
+                Text('Loading preview...', style: TextStyle(color: kWhite54, fontSize: 14)),
               ],
             ),
           ),
@@ -158,20 +160,22 @@ class _ArtifactViewerPageState extends State<ArtifactViewerPage> {
   Widget _buildFallbackView() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: const Color(0xFF0A0A0A),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.white.withOpacity(0.06)),
-        ),
-        child: SelectableText(
-          widget.artifact.content,
-          style: const TextStyle(
-            fontFamily: 'monospace',
-            fontSize: 13,
-            height: 1.6,
-            color: Color(0xFFE0E0E0),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(kRadiusSmall),
+        child: BackdropFilter(
+          filter: ui.ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: glassDeco(radius: kRadiusSmall),
+            child: SelectableText(
+              widget.artifact.content,
+              style: const TextStyle(
+                fontFamily: 'monospace',
+                fontSize: 13,
+                height: 1.6,
+                color: Color(0xFFE0E0E0),
+              ),
+            ),
           ),
         ),
       ),
@@ -188,13 +192,14 @@ class _ArtifactViewerPageState extends State<ArtifactViewerPage> {
             const Icon(Icons.error_outline, size: 48, color: Color(0xFFEF4444)),
             const SizedBox(height: 16),
             const Text('Render Error',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: kWhite)),
             const SizedBox(height: 8),
             Text(_renderError ?? 'Unknown error',
-              style: const TextStyle(color: Colors.white60, fontSize: 14),
+              style: const TextStyle(color: kWhite54, fontSize: 14),
               textAlign: TextAlign.center),
             const SizedBox(height: 16),
-            FilledButton(
+            GlassButton(
+              label: 'Retry',
               onPressed: () {
                 setState(() {
                   _renderError = null;
@@ -203,7 +208,6 @@ class _ArtifactViewerPageState extends State<ArtifactViewerPage> {
                 });
                 _initRender();
               },
-              child: const Text('Retry'),
             ),
           ],
         ),

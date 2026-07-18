@@ -1,9 +1,11 @@
 import 'dart:io';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart';
 import 'auth_service.dart';
 import 'ui_utils.dart';
+import 'glass_theme.dart';
 
 class NewArtifactSheet extends StatefulWidget {
   const NewArtifactSheet({super.key});
@@ -54,25 +56,18 @@ class _NewArtifactSheetState extends State<NewArtifactSheet>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              margin: const EdgeInsets.only(top: 8),
-              width: 40, height: 4,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
+            const SheetHandle(),
             const SizedBox(height: 12),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Row(
                 children: [
                   const Text('New Artifact', style: TextStyle(
-                    fontSize: 20, fontWeight: FontWeight.w700,
+                    fontSize: 20, fontWeight: FontWeight.w700, color: kWhite,
                   )),
                   const Spacer(),
                   IconButton(
-                    icon: const Icon(Icons.close),
+                    icon: const Icon(Icons.close, color: kWhite54),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ],
@@ -80,9 +75,9 @@ class _NewArtifactSheetState extends State<NewArtifactSheet>
             ),
             TabBar(
               controller: _tabController,
-              indicatorColor: const Color(0xFFDC143C),
-              labelColor: const Color(0xFFDC143C),
-              unselectedLabelColor: Colors.white54,
+              indicatorColor: kCrimson,
+              labelColor: kCrimson,
+              unselectedLabelColor: kWhite54,
               tabs: const [
                 Tab(text: 'Paste Code'),
                 Tab(text: 'Upload File'),
@@ -114,7 +109,7 @@ class _NewArtifactSheetState extends State<NewArtifactSheet>
         children: [
           TextField(
             controller: _titleController,
-            decoration: _inputDec('Title', 'My artifact'),
+            decoration: glassInputDec(label: 'Title', hint: 'My artifact'),
           ),
           const SizedBox(height: 12),
           Row(
@@ -122,8 +117,8 @@ class _NewArtifactSheetState extends State<NewArtifactSheet>
               Expanded(
                 child: DropdownButtonFormField<String>(
                   initialValue: _type,
-                  decoration: _inputDec('Type', ''),
-                  dropdownColor: const Color(0xFF1A1A1A),
+                  decoration: glassInputDec(label: 'Type'),
+                  dropdownColor: kBgNearBlack,
                   items: const [
                     DropdownMenuItem(value: 'html', child: Text('HTML')),
                     DropdownMenuItem(value: 'jsx', child: Text('JSX / React')),
@@ -136,7 +131,7 @@ class _NewArtifactSheetState extends State<NewArtifactSheet>
               Expanded(
                 child: TextField(
                   controller: _categoryController,
-                  decoration: _inputDec('Category', 'e.g. tutorials'),
+                  decoration: glassInputDec(label: 'Category', hint: 'e.g. tutorials'),
                 ),
               ),
             ],
@@ -144,26 +139,20 @@ class _NewArtifactSheetState extends State<NewArtifactSheet>
           const SizedBox(height: 12),
           TextField(
             controller: _tagsController,
-            decoration: _inputDec('Tags (comma separated)', 'tag1, tag2'),
+            decoration: glassInputDec(label: 'Tags (comma separated)', hint: 'tag1, tag2'),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _contentController,
             maxLines: 8,
-            decoration: _inputDec('Content', 'Paste your code here...'),
-            style: const TextStyle(fontFamily: 'monospace', fontSize: 13),
+            decoration: glassInputDec(label: 'Content', hint: 'Paste your code here...'),
+            style: const TextStyle(fontFamily: 'monospace', fontSize: 13, color: kWhite),
           ),
           const SizedBox(height: 16),
-          FilledButton(
+          GlassButton(
+            label: 'Create Artifact',
             onPressed: _saving ? null : _savePaste,
-            style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFFDC143C),
-              padding: const EdgeInsets.symmetric(vertical: 16),
-            ),
-            child: _saving
-                ? const SizedBox(width: 20, height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                : const Text('Create Artifact', style: TextStyle(fontWeight: FontWeight.w700)),
+            loading: _saving,
           ),
         ],
       ),
@@ -178,68 +167,77 @@ class _NewArtifactSheetState extends State<NewArtifactSheet>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // File picker area
+          // File picker area - glass card style
           InkWell(
             onTap: _pickFile,
             borderRadius: BorderRadius.circular(16),
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 40),
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: _selectedFileName != null
-                      ? const Color(0xFFDC143C)
-                      : Colors.white.withOpacity(0.15),
-                  width: 2,
-                ),
-                borderRadius: BorderRadius.circular(16),
-                color: _selectedFileName != null
-                    ? const Color(0x1FDC143C)
-                    : Colors.white.withOpacity(0.03),
-              ),
-              child: Column(
-                children: [
-                  Icon(
-                    _selectedFileName != null
-                        ? Icons.check_circle_outline
-                        : Icons.upload_file_outlined,
-                    size: 44,
-                    color: _selectedFileName != null
-                        ? const Color(0xFFDC143C)
-                        : Colors.white38,
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    _selectedFileName ?? 'Tap to select a file',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: BackdropFilter(
+                filter: ui.ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 40),
+                  decoration: BoxDecoration(
+                    border: Border.all(
                       color: _selectedFileName != null
-                          ? Colors.white70
-                          : Colors.white54,
+                          ? kCrimson.withOpacity(0.5)
+                          : kWhite.withOpacity(0.08),
+                      width: _selectedFileName != null ? 0.8 : 0.5,
                     ),
-                    textAlign: TextAlign.center,
+                    borderRadius: BorderRadius.circular(16),
+                    color: _selectedFileName != null
+                        ? kCrimson.withOpacity(0.06)
+                        : kWhite.withOpacity(0.02),
                   ),
-                  if (_selectedFileName != null) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      'Type detected: ${_uploadDetectedType.toUpperCase()}',
-                      style: const TextStyle(
-                        fontSize: 12, color: Color(0xFFDC143C),
+                  child: Column(
+                    children: [
+                      Icon(
+                        _selectedFileName != null
+                            ? Icons.check_circle_outline
+                            : Icons.upload_file_outlined,
+                        size: 44,
+                        color: _selectedFileName != null
+                            ? kCrimson
+                            : kWhite38,
                       ),
-                    ),
-                  ] else ...[
-                    const SizedBox(height: 4),
-                    const Text('Supports .html, .jsx, .tsx, .md',
-                      style: TextStyle(fontSize: 12, color: Colors.white38)),
-                  ],
-                ],
+                      const SizedBox(height: 12),
+                      Text(
+                        _selectedFileName ?? 'Tap to select a file',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: _selectedFileName != null
+                              ? kWhite70
+                              : kWhite54,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      if (_selectedFileName != null) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          'Type detected: ${_uploadDetectedType.toUpperCase()}',
+                          style: const TextStyle(
+                            fontSize: 12, color: kCrimson,
+                          ),
+                        ),
+                      ] else ...[
+                        const SizedBox(height: 4),
+                        const Text('Supports .html, .jsx, .tsx, .md',
+                          style: TextStyle(fontSize: 12, color: kWhite38)),
+                      ],
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
           const SizedBox(height: 16),
           TextField(
             controller: _titleController,
-            decoration: _inputDec('Title', _selectedFileName ?? 'Auto-detected from filename'),
+            decoration: glassInputDec(
+              label: 'Title',
+              hint: _selectedFileName ?? 'Auto-detected from filename',
+            ),
           ),
           const SizedBox(height: 12),
           Row(
@@ -247,8 +245,8 @@ class _NewArtifactSheetState extends State<NewArtifactSheet>
               Expanded(
                 child: DropdownButtonFormField<String>(
                   initialValue: _uploadDetectedType,
-                  decoration: _inputDec('Type', ''),
-                  dropdownColor: const Color(0xFF1A1A1A),
+                  decoration: glassInputDec(label: 'Type'),
+                  dropdownColor: kBgNearBlack,
                   items: const [
                     DropdownMenuItem(value: 'html', child: Text('HTML')),
                     DropdownMenuItem(value: 'jsx', child: Text('JSX / React')),
@@ -261,7 +259,7 @@ class _NewArtifactSheetState extends State<NewArtifactSheet>
               Expanded(
                 child: TextField(
                   controller: _categoryController,
-                  decoration: _inputDec('Category', 'e.g. tutorials'),
+                  decoration: glassInputDec(label: 'Category', hint: 'e.g. tutorials'),
                 ),
               ),
             ],
@@ -269,19 +267,13 @@ class _NewArtifactSheetState extends State<NewArtifactSheet>
           const SizedBox(height: 12),
           TextField(
             controller: _tagsController,
-            decoration: _inputDec('Tags', 'tag1, tag2'),
+            decoration: glassInputDec(label: 'Tags', hint: 'tag1, tag2'),
           ),
           const SizedBox(height: 16),
-          FilledButton(
+          GlassButton(
+            label: 'Upload Artifact',
             onPressed: _saving ? null : _saveUpload,
-            style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFFDC143C),
-              padding: const EdgeInsets.symmetric(vertical: 16),
-            ),
-            child: _saving
-                ? const SizedBox(width: 20, height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                : const Text('Upload Artifact', style: TextStyle(fontWeight: FontWeight.w700)),
+            loading: _saving,
           ),
         ],
       ),
@@ -429,26 +421,4 @@ class _NewArtifactSheetState extends State<NewArtifactSheet>
     }
   }
 
-  InputDecoration _inputDec(String label, String hint) {
-    return InputDecoration(
-      labelText: label,
-      hintText: hint,
-      filled: true,
-      fillColor: Colors.white.withOpacity(0.04),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: Colors.white.withOpacity(0.08)),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: Colors.white.withOpacity(0.08)),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0x44DC143C), width: 1.5),
-      ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-      labelStyle: const TextStyle(color: Colors.white54, fontSize: 13),
-    );
-  }
 }

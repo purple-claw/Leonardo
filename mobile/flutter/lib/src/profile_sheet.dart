@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'auth_service.dart';
+import 'glass_theme.dart';
 
 class ProfileSheet extends StatelessWidget {
   const ProfileSheet({super.key});
@@ -15,25 +16,18 @@ class ProfileSheet extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            margin: const EdgeInsets.only(top: 8),
-            width: 40, height: 4,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
+          const SheetHandle(),
           const SizedBox(height: 12),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Row(
               children: [
                 const Text('Profile', style: TextStyle(
-                  fontSize: 20, fontWeight: FontWeight.w700,
+                  fontSize: 20, fontWeight: FontWeight.w700, color: kWhite,
                 )),
                 const Spacer(),
                 IconButton(
-                  icon: const Icon(Icons.close),
+                  icon: const Icon(Icons.close, color: kWhite54),
                   onPressed: () => Navigator.pop(context),
                 ),
               ],
@@ -42,22 +36,22 @@ class ProfileSheet extends StatelessWidget {
           const SizedBox(height: 16),
           CircleAvatar(
             radius: 36,
-            backgroundColor: const Color(0xFFDC143C),
+            backgroundColor: kCrimson,
             child: Text(initial, style: const TextStyle(
-              fontSize: 28, fontWeight: FontWeight.w800, color: Colors.white,
+              fontSize: 28, fontWeight: FontWeight.w800, color: kWhite,
             )),
           ),
           const SizedBox(height: 12),
           Text(email, style: const TextStyle(
-            fontSize: 18, fontWeight: FontWeight.w600,
+            fontSize: 18, fontWeight: FontWeight.w600, color: kWhite,
           )),
           const SizedBox(height: 4),
           Text(
             auth.isDriveMode ? 'Drive Account' : 'Guest',
-            style: const TextStyle(color: Colors.white54, fontSize: 13),
+            style: const TextStyle(color: kWhite54, fontSize: 13),
           ),
           const SizedBox(height: 24),
-          const Divider(color: Colors.white12, height: 1),
+          const GlassDivider(),
           ListTile(
             leading: const Icon(Icons.logout, color: Color(0xFFEF4444)),
             title: const Text('Sign Out', style: TextStyle(color: Color(0xFFEF4444))),

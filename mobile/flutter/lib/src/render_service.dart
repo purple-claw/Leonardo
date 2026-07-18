@@ -43,7 +43,7 @@ class RenderService {
   Future<RenderResult> render({
     required String content,
     required String type,
-    String title = 'Leonardo Artifact',
+    String title = 'Iris Artifact',
   }) async {
     if (content.trim().isEmpty) {
       return RenderResult(

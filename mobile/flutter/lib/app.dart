@@ -1,3 +1,4 @@
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'src/auth_service.dart';
@@ -7,9 +8,10 @@ import 'src/artifact_viewer_page.dart';
 import 'src/login_page.dart';
 import 'src/models.dart';
 import 'src/new_artifact_sheet.dart';
+import 'src/glass_theme.dart';
 
-class LeonardoApp extends StatelessWidget {
-  const LeonardoApp({super.key});
+class IrisApp extends StatelessWidget {
+  const IrisApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -18,14 +20,13 @@ class LeonardoApp extends StatelessWidget {
       child: Consumer<AuthService>(
         builder: (context, authService, _) {
           return MaterialApp(
-            title: 'Leonardo',
+            title: 'Iris',
             debugShowCheckedModeBanner: false,
             theme: _buildTheme(),
             home: authService.isAuthenticated
                 ? const MainShell()
                 : const LoginPage(),
             onGenerateRoute: (settings) {
-              // Handle argument-based routes
               if (settings.name == '/viewer') {
                 final artifact = settings.arguments as Artifact;
                 return MaterialPageRoute(
@@ -33,7 +34,6 @@ class LeonardoApp extends StatelessWidget {
                   settings: settings,
                 );
               }
-              // Named routes
               final routes = <String, WidgetBuilder>{
                 '/login': (_) => const LoginPage(),
                 '/dashboard': (_) => const MainShell(),
@@ -60,37 +60,37 @@ class LeonardoApp extends StatelessWidget {
   ThemeData _buildTheme() {
     return ThemeData(
       brightness: Brightness.dark,
-      scaffoldBackgroundColor: const Color(0xFF050505),
+      scaffoldBackgroundColor: kBgPureBlack,
       colorScheme: const ColorScheme.dark(
-        primary: Color(0xFFDC143C),
-        secondary: Color(0xFF8B0000),
-        surface: Color(0x14FFFFFF),
-        onPrimary: Colors.white,
-        onSurface: Colors.white,
+        primary: kCrimson,
+        secondary: kCrimsonDark,
+        surface: kGlassBase,
+        onPrimary: kWhite,
+        onSurface: kWhite,
       ),
       useMaterial3: true,
       textTheme: Typography.whiteMountainView,
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: const Color(0x14FFFFFF),
+        fillColor: kWhite04,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Color(0x26FFFFFF)),
+          borderSide: const BorderSide(color: kGlassBorder, width: 0.5),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Color(0x26FFFFFF)),
+          borderSide: const BorderSide(color: kGlassBorder, width: 0.5),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Color(0x66DC143C), width: 2),
+          borderSide: const BorderSide(color: kCrimsonBorder, width: 0.8),
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
-        labelStyle: const TextStyle(color: Colors.white70),
-        hintStyle: const TextStyle(color: Color(0x99FFFFFF)),
+        labelStyle: const TextStyle(color: kWhite70),
+        hintStyle: const TextStyle(color: kWhite38),
       ),
       cardTheme: const CardThemeData(
-        color: Color(0x14FFFFFF),
+        color: kGlassBase,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(20)),
         ),
@@ -99,8 +99,8 @@ class LeonardoApp extends StatelessWidget {
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          backgroundColor: const Color(0xFFDC143C),
-          foregroundColor: Colors.white,
+          backgroundColor: kCrimson,
+          foregroundColor: kWhite,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           elevation: 0,
           padding: const EdgeInsets.symmetric(vertical: 14),
@@ -109,7 +109,7 @@ class LeonardoApp extends StatelessWidget {
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: Colors.white70,
+          foregroundColor: kWhite70,
           textStyle: const TextStyle(fontWeight: FontWeight.w600),
         ),
       ),
@@ -137,15 +137,28 @@ class _MainShellState extends State<MainShell> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: kBgPureBlack,
       body: IndexedStack(
         index: _currentIndex,
         children: _pages,
       ),
       bottomNavigationBar: _buildBottomNav(context),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showNewArtifact(context),
-        backgroundColor: const Color(0xFFDC143C),
-        child: const Icon(Icons.add, color: Colors.white),
+      floatingActionButton: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: kCrimson.withOpacity(0.35),
+              blurRadius: 20,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: FloatingActionButton(
+          onPressed: () => _showNewArtifact(context),
+          backgroundColor: kCrimson,
+          child: const Icon(Icons.add, color: kWhite),
+        ),
       ),
     );
   }
@@ -154,46 +167,48 @@ class _MainShellState extends State<MainShell> {
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       decoration: BoxDecoration(
-        color: const Color(0xFF0D0D0D),
+        color: kBgNearBlack.withOpacity(0.95),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withOpacity(0.06)),
+        border: Border.all(color: kWhite.withOpacity(0.06), width: 0.5),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(24),
-        child: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: (i) {
-            if (i == 2) {
-              // Profile — show bottom sheet
-              _showProfileSheet(context);
-              return;
-            }
-            setState(() => _currentIndex = i);
-          },
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          type: BottomNavigationBarType.fixed,
-          selectedItemColor: const Color(0xFFDC143C),
-          unselectedItemColor: Colors.white38,
-          selectedFontSize: 12,
-          unselectedFontSize: 12,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.dashboard_outlined),
-              activeIcon: Icon(Icons.dashboard),
-              label: 'Dashboard',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.library_books_outlined),
-              activeIcon: Icon(Icons.library_books),
-              label: 'Library',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline),
-              activeIcon: Icon(Icons.person),
-              label: 'Profile',
-            ),
-          ],
+        child: BackdropFilter(
+          filter: ui.ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+          child: BottomNavigationBar(
+            currentIndex: _currentIndex,
+            onTap: (i) {
+              if (i == 2) {
+                _showProfileSheet(context);
+                return;
+              }
+              setState(() => _currentIndex = i);
+            },
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            type: BottomNavigationBarType.fixed,
+            selectedItemColor: kCrimson,
+            unselectedItemColor: kWhite38,
+            selectedFontSize: 12,
+            unselectedFontSize: 12,
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.dashboard_outlined),
+                activeIcon: Icon(Icons.dashboard),
+                label: 'Dashboard',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.library_books_outlined),
+                activeIcon: Icon(Icons.library_books),
+                label: 'Library',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.person_outline),
+                activeIcon: Icon(Icons.person),
+                label: 'Profile',
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -203,11 +218,9 @@ class _MainShellState extends State<MainShell> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFF0D0D0D),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (_) => const _ProfileSheetContent(),
+      backgroundColor: Colors.transparent,
+      barrierColor: kCrimson.withOpacity(0.05),
+      builder: (_) => const GlassSheet(child: _ProfileSheetContent()),
     );
   }
 
@@ -215,16 +228,14 @@ class _MainShellState extends State<MainShell> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFF0D0D0D),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (_) => const NewArtifactSheet(),
+      backgroundColor: Colors.transparent,
+      barrierColor: kCrimson.withOpacity(0.05),
+      builder: (_) => const GlassSheet(child: NewArtifactSheet()),
     );
   }
 }
 
-/// Inline profile sheet content to avoid import issues.
+/// Inline profile sheet content.
 class _ProfileSheetContent extends StatelessWidget {
   const _ProfileSheetContent();
 
@@ -238,25 +249,18 @@ class _ProfileSheetContent extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            margin: const EdgeInsets.only(top: 8),
-            width: 40, height: 4,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
+          const SheetHandle(),
           const SizedBox(height: 12),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Row(
               children: [
                 const Text('Profile', style: TextStyle(
-                  fontSize: 20, fontWeight: FontWeight.w700,
+                  fontSize: 20, fontWeight: FontWeight.w700, color: kWhite,
                 )),
                 const Spacer(),
                 IconButton(
-                  icon: const Icon(Icons.close),
+                  icon: const Icon(Icons.close, color: kWhite54),
                   onPressed: () => Navigator.pop(context),
                 ),
               ],
@@ -265,22 +269,22 @@ class _ProfileSheetContent extends StatelessWidget {
           const SizedBox(height: 16),
           CircleAvatar(
             radius: 36,
-            backgroundColor: const Color(0xFFDC143C),
+            backgroundColor: kCrimson,
             child: Text(initial, style: const TextStyle(
-              fontSize: 28, fontWeight: FontWeight.w800, color: Colors.white,
+              fontSize: 28, fontWeight: FontWeight.w800, color: kWhite,
             )),
           ),
           const SizedBox(height: 12),
           Text(email, style: const TextStyle(
-            fontSize: 18, fontWeight: FontWeight.w600,
+            fontSize: 18, fontWeight: FontWeight.w600, color: kWhite,
           )),
           const SizedBox(height: 4),
           Text(
             auth.isDriveMode ? 'Drive Account' : 'Guest',
-            style: const TextStyle(color: Colors.white54, fontSize: 13),
+            style: const TextStyle(color: kWhite54, fontSize: 13),
           ),
           const SizedBox(height: 24),
-          const Divider(color: Colors.white12, height: 1),
+          const GlassDivider(),
           ListTile(
             leading: const Icon(Icons.logout, color: Color(0xFFEF4444)),
             title: const Text('Sign Out', style: TextStyle(color: Color(0xFFEF4444))),

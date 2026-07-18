@@ -1,9 +1,12 @@
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'auth_service.dart';
 import 'models.dart';
+import 'artifact_card.dart';
 import 'new_artifact_sheet.dart';
 import 'category_sheet.dart';
+import 'glass_theme.dart';
 
 class DashboardPage extends StatefulWidget {
   static const routeName = '/dashboard';
@@ -37,302 +40,350 @@ class _DashboardPageState extends State<DashboardPage> {
     final recent = [...auth.artifacts]
       ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
     final recent5 = recent.take(5).toList();
+    final totalArts = auth.artifacts.length;
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
-      child: Column(
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(0, 8, 0, 100),
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Dashboard', style: TextStyle(
-                      fontSize: 28, fontWeight: FontWeight.w800,
-                      letterSpacing: -0.5,
-                      foreground: Paint()..shader = const LinearGradient(
-                        colors: [Colors.white, Color(0x99FFFFFF)],
-                      ).createShader(const Rect.fromLTWH(0, 0, 200, 40)),
-                    )),
-                    const SizedBox(height: 4),
-                    Text('Welcome back, $userLabel',
-                      style: const TextStyle(color: Colors.white60, fontSize: 14)),
-                  ],
-                ),
-              ),
-              if (auth.isDriveMode)
-                IconButton(
-                  icon: const Icon(Icons.refresh_rounded),
-                  tooltip: 'Refresh from Drive',
-                  onPressed: auth.isLoading ? null : _load,
-                ),
-            ],
+          // ── Hero Section ──
+          _HeroSection(
+            userLabel: userLabel,
+            artifactCount: totalArts,
+            totalWords: auth.totalWords,
+            thisWeek: auth.thisWeekCount,
+            categories: auth.categories.length,
+            isDriveMode: auth.isDriveMode,
+            onRefresh: auth.isLoading ? null : _load,
           ),
-          const SizedBox(height: 24),
 
-          // Loading state (only on first load)
+          // ── Loading ──
           if (auth.isLoading && !_initialLoadDone)
             const Center(child: Padding(
               padding: EdgeInsets.all(60),
-              child: CircularProgressIndicator(),
+              child: CircularProgressIndicator(color: kCrimson),
             ))
 
-          // Error state (no data loaded yet)
+          // ── Error ──
           else if (hasError && auth.artifacts.isEmpty)
-            _buildErrorState(auth)
+            _buildError(auth)
 
-          // Normal state — show content
+          // ── Content ──
           else ...[
-            _buildStatsGrid(auth),
-            const SizedBox(height: 28),
-
-            // Error banner (when data is shown but sync failed)
-            if (hasError)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: const Color(0x1FEF4444),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0x33EF4444)),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.warning_amber_rounded, size: 18, color: Color(0xFFEF4444)),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(auth.error!,
-                          style: const TextStyle(color: Color(0xFFEF4444), fontSize: 13)),
-                      ),
-                      TextButton(
-                        onPressed: _load,
-                        child: const Text('Retry', style: TextStyle(fontSize: 13)),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+            if (hasError) _buildErrorBanner(auth),
 
             // Recent Activity
-            _buildSectionHeader('Recent Activity', onViewAll: () {
-              // Switch to library
-            }),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+              child: SectionHeader(
+                title: 'Continue Creating',
+                onViewAll: () {},
+              ),
+            ),
             const SizedBox(height: 12),
             if (recent5.isEmpty)
-              _buildEmptyState(auth.isDriveMode)
+              _buildEmpty(auth.isDriveMode)
             else
-              ...recent5.map((art) => _RecentItem(
+              ...recent5.map((art) => _RecentTile(
                 artifact: art,
                 onTap: () => Navigator.pushNamed(context, '/viewer', arguments: art),
               )),
+
             const SizedBox(height: 28),
+
             // Quick Actions
-            _buildSectionHeader('Quick Actions'),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+              child: SectionHeader(title: 'Quick Actions'),
+            ),
             const SizedBox(height: 12),
-            _buildQuickActions(context, auth),
+            _QuickActionGrid(
+              onPasteCode: () => showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                barrierColor: kCrimson.withOpacity(0.05),
+                builder: (_) => const GlassSheet(child: NewArtifactSheet()),
+              ),
+              onManageCategories: () => showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                barrierColor: kCrimson.withOpacity(0.05),
+                builder: (_) => const GlassSheet(child: CategorySheet()),
+              ),
+            ),
           ],
         ],
       ),
-    );
+    ),
+  );
   }
 
-  Widget _buildErrorState(AuthService auth) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 60, horizontal: 24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.cloud_off_rounded, size: 48, color: Colors.white24),
-            const SizedBox(height: 16),
-            Text(auth.error ?? 'Could not connect to Drive',
-              style: const TextStyle(color: Colors.white60, fontSize: 15),
-              textAlign: TextAlign.center),
-            const SizedBox(height: 20),
-            FilledButton.icon(
-              onPressed: auth.isLoading ? null : _load,
-              icon: const Icon(Icons.refresh, size: 18),
-              label: const Text('Retry'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatsGrid(AuthService auth) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final isWide = constraints.maxWidth > 400;
-        return Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          children: [
-            SizedBox(
-              width: isWide ? (constraints.maxWidth - 12) / 2 : constraints.maxWidth,
-              child: _StatCard(
-                label: 'Total Artifacts',
-                value: '${auth.artifacts.length}',
-                icon: Icons.article_outlined,
-              ),
-            ),
-            SizedBox(
-              width: isWide ? (constraints.maxWidth - 12) / 2 : constraints.maxWidth,
-              child: _StatCard(
-                label: 'Words Written',
-                value: '${auth.totalWords}',
-                accent: true,
-                icon: Icons.text_fields,
-              ),
-            ),
-            SizedBox(
-              width: isWide ? (constraints.maxWidth - 12) / 2 : constraints.maxWidth,
-              child: _StatCard(
-                label: 'Categories',
-                value: '${auth.categories.length}',
-                icon: Icons.category_outlined,
-              ),
-            ),
-            SizedBox(
-              width: isWide ? (constraints.maxWidth - 12) / 2 : constraints.maxWidth,
-              child: _StatCard(
-                label: 'This Week',
-                value: '${auth.thisWeekCount}',
-                icon: Icons.trending_up,
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildSectionHeader(String title, {VoidCallback? onViewAll}) {
-    return Row(
-      children: [
-        Text(title, style: const TextStyle(
-          fontSize: 18, fontWeight: FontWeight.w700,
-        )),
-        const Spacer(),
-        if (onViewAll != null)
-          TextButton(
-            onPressed: onViewAll,
-            child: const Text('View all', style: TextStyle(
-              color: Colors.white54, fontWeight: FontWeight.w600, fontSize: 13)),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildEmptyState(bool isDrive) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.03),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.06)),
-      ),
+  Widget _buildError(AuthService auth) {
+    return Padding(
+      padding: const EdgeInsets.all(60),
       child: Column(
         children: [
-          Icon(Icons.library_books_outlined, size: 40, color: Colors.white24),
-          const SizedBox(height: 12),
-          const Text('No artifacts yet', style: TextStyle(
-            fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white54)),
-          const SizedBox(height: 6),
-          Text(
-            isDrive
-                ? 'Create your first artifact below.'
-                : 'Create your first artifact to get started.',
-            style: const TextStyle(color: Colors.white38, fontSize: 13),
+          GlassCard(
+            padding: const EdgeInsets.all(24),
+            radius: 20,
+            child: const Icon(Icons.cloud_off_rounded, size: 36, color: Color(0xFFEF4444)),
+          ),
+          const SizedBox(height: 20),
+          Text(auth.error ?? 'Could not connect to Drive',
+            style: const TextStyle(color: kWhite54, fontSize: 15),
+            textAlign: TextAlign.center),
+          const SizedBox(height: 20),
+          GlassButton(
+            label: 'Retry',
+            icon: Icons.refresh,
+            onPressed: auth.isLoading ? null : _load,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildQuickActions(BuildContext context, AuthService auth) {
-    return Column(
-      children: [
-        _ActionBtn(
-          icon: Icons.upload_file_outlined,
-          label: 'Paste Code',
-          onTap: () => showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            backgroundColor: const Color(0xFF0D0D0D),
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+  Widget _buildErrorBanner(AuthService auth) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+      child: GlassCard(
+        padding: const EdgeInsets.all(12),
+        radius: 12,
+        borderColor: const Color(0x33EF4444),
+        child: Row(
+          children: [
+            const Icon(Icons.warning_amber_rounded, size: 18, color: Color(0xFFEF4444)),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(auth.error!,
+                style: const TextStyle(color: Color(0xFFEF4444), fontSize: 13)),
             ),
-            builder: (_) => const NewArtifactSheet(),
-          ),
-        ),
-        const SizedBox(height: 8),
-        _ActionBtn(
-          icon: Icons.category_outlined,
-          label: 'Manage Categories',
-          onTap: () => showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            backgroundColor: const Color(0xFF0D0D0D),
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            TextButton(
+              onPressed: _load,
+              child: const Text('Retry', style: TextStyle(fontSize: 13, color: kCrimson)),
             ),
-            builder: (_) => const CategorySheet(),
-          ),
+          ],
         ),
-      ],
+      ),
+    );
+  }
+
+  Widget _buildEmpty(bool isDrive) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: GlassCard(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          children: [
+            Container(
+              width: 56, height: 56,
+              decoration: BoxDecoration(
+                color: kCrimson.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: const Icon(Icons.library_books_outlined, size: 28, color: kCrimson),
+            ),
+            const SizedBox(height: 12),
+            const Text('No artifacts yet', style: TextStyle(
+              fontSize: 16, fontWeight: FontWeight.w700, color: kWhite54)),
+            const SizedBox(height: 4),
+            Text(
+              isDrive
+                  ? 'Create your first artifact below.'
+                  : 'Create your first artifact to get started.',
+              style: const TextStyle(color: kWhite38, fontSize: 12),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
 
-// ── Reusable Widgets ────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+//  HERO SECTION
+// ═══════════════════════════════════════════════════════════════
 
-class _StatCard extends StatelessWidget {
-  final String label;
-  final String value;
-  final bool accent;
-  final IconData icon;
+class _HeroSection extends StatelessWidget {
+  final String userLabel;
+  final int artifactCount;
+  final int totalWords;
+  final int thisWeek;
+  final int categories;
+  final bool isDriveMode;
+  final VoidCallback? onRefresh;
 
-  const _StatCard({
-    required this.label,
-    required this.value,
-    this.accent = false,
-    required this.icon,
+  const _HeroSection({
+    required this.userLabel,
+    required this.artifactCount,
+    required this.totalWords,
+    required this.thisWeek,
+    required this.categories,
+    required this.isDriveMode,
+    this.onRefresh,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: accent
-            ? const LinearGradient(colors: [Color(0x1FDC143C), Color(0x10000000)])
-            : const LinearGradient(colors: [Color(0x14FFFFFF), Color(0x10FFFFFF)]),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withOpacity(0.06)),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(28),
+        child: BackdropFilter(
+          filter: ui.ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  kCrimson.withOpacity(0.12),
+                  kBgPureBlack.withOpacity(0.3),
+                  kWhite.withOpacity(0.04),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(
+                color: kCrimson.withOpacity(0.2),
+                width: 0.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: kCrimson.withOpacity(0.15),
+                  blurRadius: 40,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Greeting row
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Welcome back,', style: TextStyle(
+                            fontSize: 12, color: kWhite54,
+                          )),
+                          const SizedBox(height: 1),
+                          Text(userLabel, style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.w800,
+                            letterSpacing: -0.5,
+                            foreground: Paint()..shader = const LinearGradient(
+                              colors: [kWhite, Color(0xCCFFFFFF)],
+                            ).createShader(const Rect.fromLTWH(0, 0, 200, 32)),
+                          )),
+                        ],
+                      ),
+                    ),
+                    if (isDriveMode)
+                      Container(
+                        decoration: BoxDecoration(
+                          color: kWhite.withOpacity(0.06),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: IconButton(
+                          icon: const Icon(Icons.refresh_rounded, size: 20, color: kWhite54),
+                          tooltip: 'Refresh',
+                          onPressed: onRefresh,
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                // Stats bar
+                _StatsBar(
+                  items: [
+                    _StatItem(icon: Icons.article_outlined, value: '$artifactCount', label: 'Artifacts'),
+                    _StatItem(icon: Icons.text_fields, value: '$totalWords', label: 'Words'),
+                    _StatItem(icon: Icons.category_outlined, value: '$categories', label: 'Categories'),
+                    _StatItem(icon: Icons.trending_up, value: '$thisWeek', label: 'This Week'),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  STATS BAR — horizontal, compact, sleek
+// ═══════════════════════════════════════════════════════════════
+
+class _StatItem {
+  final IconData icon;
+  final String value;
+  final String label;
+  const _StatItem({required this.icon, required this.value, required this.label});
+}
+
+class _StatsBar extends StatelessWidget {
+  final List<_StatItem> items;
+  const _StatsBar({required this.items});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: List.generate(items.length, (i) {
+        final item = items[i];
+        final isLast = i == items.length - 1;
+        return Expanded(
+          child: Row(
+            children: [
+              Expanded(
+                child: _MiniStat(icon: item.icon, value: item.value, label: item.label),
+              ),
+              if (!isLast)
+                Container(
+                  width: 1,
+                  height: 24,
+                  color: Colors.white.withOpacity(0.08),
+                ),
+            ],
+          ),
+        );
+      }),
+    );
+  }
+}
+
+class _MiniStat extends StatelessWidget {
+  final IconData icon;
+  final String value;
+  final String label;
+  const _MiniStat({required this.icon, required this.value, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 2),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 14, color: Colors.white38),
-              const SizedBox(width: 6),
-              Text(label.toUpperCase(), style: const TextStyle(
-                fontSize: 11, fontWeight: FontWeight.w700, color: Colors.white54,
-                letterSpacing: 0.8,
+              Icon(icon, size: 12, color: kCrimson.withOpacity(0.7)),
+              const SizedBox(width: 4),
+              Text(value, style: const TextStyle(
+                fontSize: 18, fontWeight: FontWeight.w800,
+                color: kWhite, letterSpacing: -0.5,
               )),
             ],
           ),
-          const SizedBox(height: 12),
-          Text(value, style: TextStyle(
-            fontSize: 32, fontWeight: FontWeight.w800,
-            color: accent ? const Color(0xFFDC143C) : Colors.white,
-            letterSpacing: -1,
+          const SizedBox(height: 2),
+          Text(label, style: const TextStyle(
+            fontSize: 10, color: kWhite38,
           )),
         ],
       ),
@@ -340,106 +391,186 @@ class _StatCard extends StatelessWidget {
   }
 }
 
-class _RecentItem extends StatelessWidget {
+// ═══════════════════════════════════════════════════════════════
+//  RECENT TILE — sleek, minimal
+// ═══════════════════════════════════════════════════════════════
+
+class _RecentTile extends StatelessWidget {
   final Artifact artifact;
   final VoidCallback onTap;
-
-  const _RecentItem({required this.artifact, required this.onTap});
+  const _RecentTile({required this.artifact, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        child: Row(
-          children: [
-            Container(
-              width: 36, height: 36,
-              decoration: BoxDecoration(
-                color: _typeColor.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Center(child: Icon(_typeIcon, size: 16, color: _typeColor)),
+    final tags = artifact.tags.take(2).toList();
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(color: kWhite.withOpacity(0.04), width: 0.5),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(artifact.title, style: const TextStyle(
-                    fontWeight: FontWeight.w600, fontSize: 14,
-                  )),
-                  const SizedBox(height: 1),
-                  Text(
-                    '${artifact.category.isNotEmpty ? '${artifact.category} · ' : ''}${_formatDate(artifact.createdAt)}',
-                    style: const TextStyle(color: Colors.white54, fontSize: 12),
-                  ),
-                ],
+          ),
+          child: Row(
+            children: [
+              // Icon
+              Container(
+                width: 40, height: 40,
+                decoration: BoxDecoration(
+                  color: typeColor(artifact.type).withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(typeIcon(artifact.type), size: 20, color: typeColor(artifact.type)),
               ),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.06),
-                borderRadius: BorderRadius.circular(4),
+              const SizedBox(width: 14),
+              // Title + tags
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(artifact.title, style: const TextStyle(
+                      fontWeight: FontWeight.w600, fontSize: 14, color: kWhite,
+                    ), maxLines: 1, overflow: TextOverflow.ellipsis),
+                    if (tags.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Row(
+                        children: tags.map((t) => Container(
+                          margin: const EdgeInsets.only(right: 4),
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                          decoration: BoxDecoration(
+                            color: kCrimson.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                          child: Text(t, style: const TextStyle(
+                            fontSize: 10, color: kCrimson,
+                          )),
+                        )).toList(),
+                      ),
+                    ],
+                  ],
+                ),
               ),
-              child: Text(artifact.type.toUpperCase(), style: const TextStyle(
-                fontSize: 9, fontWeight: FontWeight.w700, color: Colors.white54)),
-            ),
-          ],
+              // Date
+              Text(formatDateShort(artifact.createdAt), style: const TextStyle(
+                fontSize: 11, color: kWhite38,
+              )),
+              const SizedBox(width: 8),
+              Icon(Icons.chevron_right, size: 16, color: kWhite24),
+            ],
+          ),
         ),
       ),
     );
   }
-
-  Color get _typeColor {
-    if (artifact.type == 'jsx') return const Color(0xFFFBBF24);
-    if (artifact.type == 'html') return const Color(0xFF60A5FA);
-    if (artifact.type == 'md') return const Color(0xFF34D399);
-    return Colors.white54;
-  }
-
-  IconData get _typeIcon {
-    if (artifact.type == 'jsx') return Icons.code;
-    if (artifact.type == 'html') return Icons.web;
-    if (artifact.type == 'md') return Icons.article;
-    return Icons.insert_drive_file;
-  }
-
-  String _formatDate(String s) {
-    final dt = DateTime.tryParse(s);
-    if (dt == null) return '';
-    final now = DateTime.now();
-    final diff = now.difference(dt);
-    if (diff.inMinutes < 1) return 'Just now';
-    if (diff.inHours < 1) return '${diff.inMinutes}m ago';
-    if (diff.inDays < 1) return '${diff.inHours}h ago';
-    if (diff.inDays < 7) return '${diff.inDays}d ago';
-    return '${dt.month}/${dt.day}';
-  }
 }
 
-class _ActionBtn extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
+// ═══════════════════════════════════════════════════════════════
+//  QUICK ACTION GRID
+// ═══════════════════════════════════════════════════════════════
 
-  const _ActionBtn({required this.icon, required this.label, required this.onTap});
+class _QuickActionGrid extends StatelessWidget {
+  final VoidCallback onPasteCode;
+  final VoidCallback onManageCategories;
+
+  const _QuickActionGrid({
+    required this.onPasteCode,
+    required this.onManageCategories,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      child: OutlinedButton.icon(
-        onPressed: onTap,
-        icon: Icon(icon, size: 18, color: Colors.white70),
-        label: Text(label, style: const TextStyle(color: Colors.white70)),
-        style: OutlinedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          side: BorderSide(color: Colors.white.withOpacity(0.1)),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          backgroundColor: Colors.white.withOpacity(0.03),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Row(
+        children: [
+          Expanded(
+            child: _QuickActionCard(
+              icon: Icons.upload_file_outlined,
+              label: 'Paste Code',
+              accent: true,
+              onTap: onPasteCode,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: _QuickActionCard(
+              icon: Icons.category_outlined,
+              label: 'Categories',
+              accent: false,
+              onTap: onManageCategories,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _QuickActionCard extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool accent;
+  final VoidCallback onTap;
+
+  const _QuickActionCard({
+    required this.icon,
+    required this.label,
+    required this.accent,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(18),
+        child: BackdropFilter(
+          filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: accent
+                    ? [kCrimson.withOpacity(0.12), kBgPureBlack.withOpacity(0.2)]
+                    : [kWhite.withOpacity(0.04), kBgPureBlack.withOpacity(0.1)],
+              ),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: accent
+                    ? kCrimson.withOpacity(0.25)
+                    : kWhite.withOpacity(0.06),
+                width: 0.5,
+              ),
+              boxShadow: accent
+                  ? [BoxShadow(
+                      color: kCrimson.withOpacity(0.12),
+                      blurRadius: 16,
+                      offset: const Offset(0, 4),
+                    )]
+                  : null,
+            ),
+            child: Column(
+              children: [
+                Container(
+                  width: 44, height: 44,
+                  decoration: BoxDecoration(
+                    color: kCrimson.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Icon(icon, size: 22, color: kCrimson),
+                ),
+                const SizedBox(height: 10),
+                Text(label, style: const TextStyle(
+                  fontSize: 13, fontWeight: FontWeight.w600, color: kWhite70,
+                )),
+              ],
+            ),
+          ),
         ),
       ),
     );

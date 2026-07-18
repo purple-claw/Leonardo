@@ -1,9 +1,11 @@
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'auth_service.dart';
 import 'artifact_card.dart';
 import 'models.dart';
 import 'ui_utils.dart';
+import 'glass_theme.dart';
 
 class LibraryPage extends StatefulWidget {
   static const routeName = '/library';
@@ -64,27 +66,29 @@ class _LibraryPageState extends State<LibraryPage> {
     filtered.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
     return Scaffold(
-      body: Column(
+      backgroundColor: kBgPureBlack,
+      body: SafeArea(
+        child: Column(
         children: [
           // Header
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
             child: Row(
               children: [
                 Expanded(
                   child: Text('Library', style: TextStyle(
-                    fontSize: 28, fontWeight: FontWeight.w800,
+                    fontSize: 24, fontWeight: FontWeight.w800,
                     letterSpacing: -0.5,
                     foreground: Paint()..shader = const LinearGradient(
-                      colors: [Colors.white, Color(0x99FFFFFF)],
+                      colors: [kWhite, Color(0x99FFFFFF)],
                     ).createShader(const Rect.fromLTWH(0, 0, 200, 40)),
                   )),
                 ),
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.06),
+                    color: kWhite.withOpacity(0.06),
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.white.withOpacity(0.08)),
+                    border: Border.all(color: kWhite.withOpacity(0.08), width: 0.5),
                   ),
                   child: Row(
                     children: [
@@ -111,32 +115,19 @@ class _LibraryPageState extends State<LibraryPage> {
             child: TextField(
               controller: _searchController,
               onChanged: (_) => setState(() {}),
-              decoration: InputDecoration(
-                hintText: 'Search artifacts...',
-                prefixIcon: const Icon(Icons.search, size: 20, color: Colors.white38),
+              decoration: glassInputDec(
+                hint: 'Search artifacts...',
+                prefixIcon: const Icon(Icons.search, size: 20, color: kWhite38),
                 suffixIcon: _searchController.text.isNotEmpty
                     ? IconButton(
-                        icon: const Icon(Icons.clear, size: 18, color: Colors.white38),
+                        icon: const Icon(Icons.clear, size: 18, color: kWhite38),
                         onPressed: () {
                           _searchController.clear();
                           setState(() {});
                         },
                       )
                     : null,
-                filled: true,
-                fillColor: Colors.white.withOpacity(0.04),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide(color: Colors.white.withOpacity(0.08)),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide(color: Colors.white.withOpacity(0.08)),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: const BorderSide(color: Color(0x44DC143C), width: 1.5),
-                ),
+              ).copyWith(
                 contentPadding: const EdgeInsets.symmetric(vertical: 14),
               ),
             ),
@@ -171,7 +162,8 @@ class _LibraryPageState extends State<LibraryPage> {
           ),
         ],
       ),
-    );
+    ),
+  );
   }
 
   Widget _buildContent(AuthService auth, List<Artifact> filtered, String searchQuery) {
@@ -181,9 +173,9 @@ class _LibraryPageState extends State<LibraryPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            CircularProgressIndicator(color: Color(0xFFDC143C)),
+            CircularProgressIndicator(color: kCrimson),
             SizedBox(height: 12),
-            Text('Loading artifacts...', style: TextStyle(color: Colors.white54, fontSize: 14)),
+            Text('Loading artifacts...', style: TextStyle(color: kWhite54, fontSize: 14)),
           ],
         ),
       );
@@ -197,16 +189,16 @@ class _LibraryPageState extends State<LibraryPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.cloud_off_rounded, size: 48, color: Colors.white24),
+              const Icon(Icons.cloud_off_rounded, size: 48, color: kWhite24),
               const SizedBox(height: 16),
               Text(auth.error!,
-                style: const TextStyle(color: Colors.white54, fontSize: 14),
+                style: const TextStyle(color: kWhite54, fontSize: 14),
                 textAlign: TextAlign.center),
               const SizedBox(height: 16),
-              FilledButton.icon(
+              GlassButton(
+                label: 'Retry',
+                icon: Icons.refresh,
                 onPressed: () => auth.loadFromDrive(),
-                icon: const Icon(Icons.refresh, size: 18),
-                label: const Text('Retry'),
               ),
             ],
           ),
@@ -269,60 +261,52 @@ class _LibraryPageState extends State<LibraryPage> {
   void _showContextMenu(Artifact art) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF111111),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              margin: const EdgeInsets.only(top: 8),
-              width: 40, height: 4,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(2),
+      backgroundColor: Colors.transparent,
+      barrierColor: kCrimson.withOpacity(0.05),
+      builder: (ctx) => GlassSheet(
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SheetHandle(),
+              const SizedBox(height: 8),
+              ListTile(
+                leading: const Icon(Icons.open_in_new, color: kWhite70),
+                title: const Text('Open in Web Viewer', style: TextStyle(color: kWhite)),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  art.content.isNotEmpty
+                      ? _openArtifact(art)
+                      : null;
+                },
               ),
-            ),
-            const SizedBox(height: 8),
-            ListTile(
-              leading: const Icon(Icons.open_in_new, color: Colors.white70),
-              title: const Text('Open in Web Viewer'),
-              onTap: () {
-                Navigator.pop(ctx);
-                art.content.isNotEmpty
-                    ? _openArtifact(art)
-                    : null;
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.copy, color: Colors.white70),
-              title: const Text('Copy Link'),
-              onTap: () {
-                Navigator.pop(ctx);
-                // Copy link to clipboard
-              },
-            ),
-            const Divider(color: Colors.white12, height: 1),
-            ListTile(
-              leading: const Icon(Icons.delete_outline, color: Color(0xFFEF4444)),
-              title: const Text('Delete', style: TextStyle(color: Color(0xFFEF4444))),
-              onTap: () async {
-                Navigator.pop(ctx);
-                final confirmed = await showConfirmDialog(
-                  context,
-                  title: 'Delete Artifact',
-                  message: 'Delete "${art.title}"?',
-                  confirmLabel: 'Delete',
-                );
-                if (confirmed == true) {
-                  await context.read<AuthService>().deleteArtifact(art.id);
-                }
-              },
-            ),
-            const SizedBox(height: 8),
-          ],
+              ListTile(
+                leading: const Icon(Icons.copy, color: kWhite70),
+                title: const Text('Copy Link', style: TextStyle(color: kWhite)),
+                onTap: () {
+                  Navigator.pop(ctx);
+                },
+              ),
+              const GlassDivider(),
+              ListTile(
+                leading: const Icon(Icons.delete_outline, color: Color(0xFFEF4444)),
+                title: const Text('Delete', style: TextStyle(color: Color(0xFFEF4444))),
+                onTap: () async {
+                  Navigator.pop(ctx);
+                  final confirmed = await showConfirmDialog(
+                    context,
+                    title: 'Delete Artifact',
+                    message: 'Delete "${art.title}"?',
+                    confirmLabel: 'Delete',
+                  );
+                  if (confirmed == true) {
+                    await context.read<AuthService>().deleteArtifact(art.id);
+                  }
+                },
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
         ),
       ),
     );
@@ -343,11 +327,11 @@ class _ViewToggleBtn extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: active ? const Color(0x33DC143C) : Colors.transparent,
+          color: active ? kCrimson.withOpacity(0.2) : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Icon(icon, size: 18,
-          color: active ? const Color(0xFFDC143C) : Colors.white38),
+          color: active ? kCrimson : kWhite38),
       ),
     );
   }
@@ -375,10 +359,11 @@ class _FilterChip extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-            color: active ? const Color(0x33DC143C) : Colors.white.withOpacity(0.04),
+            color: active ? kCrimson.withOpacity(0.15) : kWhite.withOpacity(0.04),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: active ? const Color(0x55DC143C) : Colors.white.withOpacity(0.08),
+              color: active ? kCrimson.withOpacity(0.4) : kWhite.withOpacity(0.08),
+              width: 0.5,
             ),
           ),
           child: Row(
@@ -387,12 +372,12 @@ class _FilterChip extends StatelessWidget {
               Text(label, style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
-                color: active ? const Color(0xFFDC143C) : Colors.white70,
+                color: active ? kCrimson : kWhite70,
               )),
               const SizedBox(width: 6),
               Text('$count', style: TextStyle(
                 fontSize: 12,
-                color: active ? const Color(0xFFDC143C) : Colors.white38,
+                color: active ? kCrimson : kWhite38,
               )),
             ],
           ),

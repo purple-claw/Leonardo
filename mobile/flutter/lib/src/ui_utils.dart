@@ -1,10 +1,12 @@
-/// Shared UI component system for the Leonardo app.
+/// Shared UI component system for the Iris app.
 ///
 /// Provides styled toast notifications and confirmation dialogs
-/// that match the dark glassmorphism design language.
+/// that match the liquid glass design language.
 
 import 'dart:async';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'glass_theme.dart';
 
 // ── Toast System ─────────────────────────────────────────────
 
@@ -53,29 +55,70 @@ Future<bool> showConfirmDialog(
   final result = await showDialog<bool>(
     context: context,
     builder: (ctx) => AlertDialog(
-      backgroundColor: const Color(0xFF111111),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      title: Text(title, style: const TextStyle(
-        fontSize: 18, fontWeight: FontWeight.w700, color: Colors.white,
-      )),
-      content: Text(message, style: const TextStyle(
-        fontSize: 14, color: Color(0xFFCCCCCC), height: 1.5,
-      )),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(ctx, false),
-          child: Text(cancelLabel, style: const TextStyle(
-            color: Colors.white54, fontWeight: FontWeight.w600,
-          )),
+      backgroundColor: Colors.transparent,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      content: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: BackdropFilter(
+          filter: ui.ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: kBgNearBlack.withOpacity(0.9),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: kWhite.withOpacity(0.08), width: 0.5),
+              boxShadow: [
+                BoxShadow(
+                  color: kCrimson.withOpacity(0.12),
+                  blurRadius: 40,
+                  offset: const Offset(0, 12),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(title, style: const TextStyle(
+                  fontSize: 18, fontWeight: FontWeight.w700, color: kWhite,
+                )),
+                const SizedBox(height: 12),
+                Text(message, style: const TextStyle(
+                  fontSize: 14, color: kWhite70, height: 1.5,
+                )),
+                const SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx, false),
+                      child: Text(cancelLabel, style: const TextStyle(
+                        color: kWhite54, fontWeight: FontWeight.w600,
+                      )),
+                    ),
+                    const SizedBox(width: 12),
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: (confirmColor ?? const Color(0xFFEF4444)).withOpacity(0.3),
+                          width: 0.5,
+                        ),
+                      ),
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(ctx, true),
+                        child: Text(confirmLabel, style: TextStyle(
+                          color: confirmColor ?? const Color(0xFFEF4444),
+                          fontWeight: FontWeight.w700,
+                        )),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
         ),
-        TextButton(
-          onPressed: () => Navigator.pop(ctx, true),
-          child: Text(confirmLabel, style: TextStyle(
-            color: confirmColor ?? const Color(0xFFEF4444),
-            fontWeight: FontWeight.w700,
-          )),
-        ),
-      ],
+      ),
     ),
   );
   return result ?? false;
@@ -145,13 +188,18 @@ class _ToastWidgetState extends State<_ToastWidget>
             onTap: () {
               _controller.reverse().then((_) => widget.onDismiss());
             },
-            child: Container(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: BackdropFilter(
+                filter: ui.ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+                child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               decoration: BoxDecoration(
                 color: widget.backgroundColor,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
                   color: widget.accentColor.withOpacity(0.3),
+                  width: 0.5,
                 ),
                 boxShadow: [
                   BoxShadow(
@@ -195,7 +243,9 @@ class _ToastWidgetState extends State<_ToastWidget>
           ),
         ),
       ),
-    );
+    ),
+  ),
+);
   }
 }
 
