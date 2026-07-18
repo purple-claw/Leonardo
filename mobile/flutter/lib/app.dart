@@ -9,6 +9,7 @@ import 'src/login_page.dart';
 import 'src/models.dart';
 import 'src/new_artifact_sheet.dart';
 import 'src/glass_theme.dart';
+import 'src/splash_page.dart';
 
 class IrisApp extends StatelessWidget {
   const IrisApp({super.key});
@@ -23,9 +24,7 @@ class IrisApp extends StatelessWidget {
             title: 'Iris',
             debugShowCheckedModeBanner: false,
             theme: _buildTheme(),
-            home: authService.isAuthenticated
-                ? const MainShell()
-                : const LoginPage(),
+            home: const SplashPage(),
             onGenerateRoute: (settings) {
               if (settings.name == '/viewer') {
                 final artifact = settings.arguments as Artifact;
@@ -35,6 +34,7 @@ class IrisApp extends StatelessWidget {
                 );
               }
               final routes = <String, WidgetBuilder>{
+                '/splash': (_) => const SplashPage(),
                 '/login': (_) => const LoginPage(),
                 '/dashboard': (_) => const MainShell(),
                 '/library': (_) => const MainShell(),
