@@ -228,11 +228,23 @@ function wrapMarkdown(html: string, title: string): string {
     .callout-tip .callout-label { color: #4ade80; }
 
     @media (max-width: 700px) {
-      body { padding: 1.5rem 1rem; font-size: 16px; }
-      h1 { font-size: 1.8rem; }
-      h2 { font-size: 1.4rem; }
-      table { font-size: 0.82rem; }
-      th, td { padding: 0.4rem 0.6rem; }
+      body { padding: 1rem 0.75rem; font-size: 15px; max-width: 100%; }
+      h1 { font-size: 1.5rem; }
+      h2 { font-size: 1.25rem; margin: 1.5rem 0 0.75rem; }
+      h3 { font-size: 1.1rem; }
+      pre { margin: 0.8rem -0.75rem; border-radius: 0; }
+      pre code { padding: 0.75rem; font-size: 0.75rem; }
+      table { font-size: 0.78rem; display: block; overflow-x: auto; }
+      th, td { padding: 0.3rem 0.5rem; }
+      img { margin: 1rem 0; }
+      blockquote { margin: 1rem 0; padding: 0.75rem 1rem; }
+      .callout { margin: 1rem 0; padding: 0.75rem 1rem; }
+      .katex-display { font-size: 0.9em; }
+    }
+    @media (max-width: 480px) {
+      body { font-size: 14px; padding: 0.75rem 0.5rem; }
+      h1 { font-size: 1.3rem; }
+      h2 { font-size: 1.1rem; }
     }
   </style>
 </head>
@@ -400,7 +412,7 @@ if (!__root) {
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta http-equiv="Content-Security-Policy" content="${CSP}">
   <title>${escHtml(title)}</title>
   <link rel="stylesheet" href="/fonts/fonts.css">
@@ -409,6 +421,9 @@ if (!__root) {
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body, #root { width: 100%; height: 100%; }
     body { font-family: var(--font-sans, 'Inter', system-ui, -apple-system, sans-serif); }
+    @media (max-width: 700px) {
+      html { font-size: 15px; }
+    }
   </style>
 </head>
 <body>

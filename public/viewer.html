@@ -11,17 +11,35 @@
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    :root { --font-sans: 'Styrene', 'Instrument Sans', 'Segoe UI', 'Helvetica', sans-serif; }
-    body { font-family: var(--font-sans); background: #0a0a0a; overflow: hidden; }
+    :root {
+      --font-sans: 'Inter', 'Instrument Sans', 'Segoe UI', 'Helvetica', sans-serif;
+      --font-mono: 'JetBrains Mono', 'IBM Plex Mono', monospace;
+      --bg: #050505; --surface: #0a0a0a; --border: #1a1a1a;
+    }
+    body { font-family: var(--font-sans); background: var(--bg); overflow: hidden; }
     .bar {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 0.75rem 1.5rem; border-bottom: 1px solid #1f1f1f;
-      background: #111; color: #f5f5f5; height: 56px;
+      padding: 0.5rem 1rem; border-bottom: 1px solid var(--border);
+      background: var(--surface); color: #f5f5f5; height: 48px;
+      gap: 8px;
     }
-    .bar a { color: #f5f5f5; text-decoration: none; font-size: 0.85rem; font-weight: 600; }
-    .bar a:hover { opacity: 0.7; }
-    .bar h3 { font-size: 0.95rem; font-weight: 600; }
-    iframe { width: 100%; height: calc(100vh - 56px); border: none; background: #fff; display: block; }
+    .bar a {
+      color: #aaa; text-decoration: none; font-size: 0.78rem; font-weight: 600;
+      font-family: var(--font-mono); white-space: nowrap;
+    }
+    .bar a:hover { color: #ff5a00; }
+    .bar h3 {
+      font-size: 0.85rem; font-weight: 600;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      flex: 1; text-align: center;
+    }
+    iframe { width: 100%; height: calc(100vh - 48px); border: none; background: #fff; display: block; }
+    @media (max-width: 600px) {
+      .bar { padding: 0.4rem 0.75rem; height: 44px; }
+      .bar a { font-size: 0.72rem; }
+      .bar h3 { font-size: 0.78rem; }
+      iframe { height: calc(100vh - 44px); }
+    }
   </style>
 </head>
 <body>

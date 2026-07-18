@@ -1,36 +1,62 @@
 import { Router } from "express";
-import { listArtifacts, getArtifact, createArtifact, updateArtifact, deleteArtifact, listCategories, renameCategory, removeCategory } from "../db.js";
+import { listArtifacts, getArtifact, createArtifact, updateArtifact, deleteArtifact, listCategories, createCategory, renameCategory, removeCategory, getSessionUserId, getUserById } from "../db.js";
 import { parseFrontmatter } from "../services/markdown-renderer.js";
 
-const API_KEY = process.env.LEONARDO_API_KEY || "";
-
-function requireAuth(req: any, res: any, next: any) {
-  if (!API_KEY) return next();
+function getUserId(req: any): string | undefined {
   const auth = req.headers.authorization || "";
   const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
-  if (token === API_KEY) return next();
-  res.status(401).json({ error: "Unauthorized. Set LEONARDO_API_KEY or pass a Bearer token." });
+  return getSessionUserId(token) || undefined;
 }
 
 export const artifactRouter = Router();
 
-artifactRouter.get("/", (_req, res) => {
+artifactRouter.get("/", (req, res) => {
   try {
-    res.json(listArtifacts());
+    const userId = getUserId(req);
+    res.json(listArtifacts(userId));
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
 });
 
-artifactRouter.get("/categories", (_req, res) => {
+function requireAdmin(req: any, res: any): boolean {
+  const userId = getUserId(req);
+  if (!userId) { res.status(401).json({ error: "Unauthorized" }); return false; }
+  const user = getUserById(userId);
+  if (!user || user.role !== 'admin') { res.status(403).json({ error: "Forbidden: Admins only" }); return false; }
+  return true;
+}
+
+artifactRouter.post("/categories", (req, res) => {
   try {
-    res.json(listCategories());
+    if (!requireAdmin(req, res)) return;
+    const { name } = req.body;
+    if (!name || !name.trim()) {
+      res.status(400).json({ error: "name is required" });
+      return;
+    }
+    const slug = name.trim().toLowerCase().replace(/\s+/g, '-');
+    const ok = createCategory(slug);
+    if (!ok) {
+      res.status(409).json({ error: "Category already exists" });
+      return;
+    }
+    res.status(201).json({ name: slug });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
 });
 
-artifactRouter.patch("/category/rename", requireAuth, (req, res) => {
+artifactRouter.get("/categories", (req, res) => {
+  try {
+    const userId = getUserId(req);
+    res.json(listCategories(userId));
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+artifactRouter.patch("/category/rename", (req, res) => {
   try {
     const { from, to } = req.body;
     if (!from || !to) {
@@ -44,7 +70,7 @@ artifactRouter.patch("/category/rename", requireAuth, (req, res) => {
   }
 });
 
-artifactRouter.delete("/category/:name", requireAuth, (req, res) => {
+artifactRouter.delete("/category/:name", (req, res) => {
   try {
     const name = String(req.params.name);
     const count = removeCategory(name);
@@ -68,9 +94,10 @@ artifactRouter.get("/:id", (req, res) => {
   }
 });
 
-artifactRouter.post("/", requireAuth, (req, res) => {
+artifactRouter.post("/", (req, res) => {
   try {
     let { title, type, content, desc, slug, coverImg, category, tags } = req.body;
+    const userId = getUserId(req);
     if (!type || !content) {
       res.status(400).json({ error: "type and content are required" });
       return;
@@ -95,16 +122,17 @@ artifactRouter.post("/", requireAuth, (req, res) => {
       return;
     }
 
-    const art = createArtifact({ title, type, content, desc, slug, coverImg, category, tags });
+    const art = createArtifact({ title, type, content, desc, slug, coverImg, category, tags, userId });
     res.status(201).json(art);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
 });
 
-artifactRouter.post("/upload", requireAuth, (req, res) => {
+artifactRouter.post("/upload", (req, res) => {
   try {
     let { filename, content: fileContent, title, category, tags } = req.body;
+    const userId = getUserId(req);
     if (!filename || !fileContent) {
       res.status(400).json({ error: "filename and content are required" });
       return;
@@ -147,6 +175,7 @@ artifactRouter.post("/upload", requireAuth, (req, res) => {
       tags: mergedTags,
       desc: mdDesc,
       coverImg: mdCoverImg,
+      userId,
     });
     res.status(201).json(art);
   } catch (err: any) {
@@ -154,10 +183,11 @@ artifactRouter.post("/upload", requireAuth, (req, res) => {
   }
 });
 
-artifactRouter.put("/:id", requireAuth, (req, res) => {
+artifactRouter.put("/:id", (req, res) => {
   try {
     const id = String(req.params.id);
-    const updated = updateArtifact(id, req.body);
+    const userId = getUserId(req);
+    const updated = updateArtifact(id, userId, req.body);
     if (!updated) {
       res.status(404).json({ error: "Artifact not found" });
       return;
@@ -168,10 +198,11 @@ artifactRouter.put("/:id", requireAuth, (req, res) => {
   }
 });
 
-artifactRouter.delete("/:id", requireAuth, (req, res) => {
+artifactRouter.delete("/:id", (req, res) => {
   try {
     const id = String(req.params.id);
-    const deleted = deleteArtifact(id);
+    const userId = getUserId(req);
+    const deleted = deleteArtifact(id, userId);
     if (!deleted) {
       res.status(404).json({ error: "Artifact not found" });
       return;

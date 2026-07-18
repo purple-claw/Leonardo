@@ -4,6 +4,7 @@ import cors from "cors";
 import path from "node:path";
 import { initDB } from "./db.js";
 import { artifactRouter } from "./routes/artifacts.js";
+import { authRouter } from "./routes/auth.js";
 import { rendererRouter } from "./routes/renderer.js";
 
 process.on("uncaughtException", (err) => {
@@ -33,6 +34,7 @@ app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
+app.use("/api/auth", authRouter);
 app.use("/api/artifacts", artifactRouter);
 app.use("/api", rendererRouter);
 
