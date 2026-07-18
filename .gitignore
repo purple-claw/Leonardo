@@ -3,6 +3,18 @@ node_modules/
 
 # Build output
 dist/
+mobile/flutter/build/
+mobile/flutter/android/build/
+
+# Flutter / Dart
+mobile/flutter/.dart_tool/
+mobile/flutter/.packages
+mobile/flutter/.flutter-plugins
+mobile/flutter/.flutter-plugins-dependencies
+mobile/flutter/.buildlog
+mobile/flutter/.metadata
+mobile/flutter/leonardo_mobile.iml
+mobile/flutter/*.iml
 
 # Local data (tokens, cache)
 data/
@@ -40,6 +52,10 @@ coverage/
 .parcel-cache/
 .next/
 .out/
+
+# Session / workspace artifacts
+session-ses_*.md
+Codebase.txt
 
 # Misc
 *.log
