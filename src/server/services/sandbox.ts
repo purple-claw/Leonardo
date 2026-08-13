@@ -252,22 +252,20 @@ function wrapMarkdown(html: string, title: string): string {
 ${html}
 
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/contrib/auto-render.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.4.1/mermaid.min.js" defer></script>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-  if (typeof renderMathInElement === "function") {
-    try {
-      renderMathInElement(document.body, {
-        delimiters: [
-          { left: "$$", right: "$$", display: true },
-          { left: "$", right: "$", display: false },
-          { left: "\\\\\\\\(", right: "\\\\\\\\)", display: false },
-          { left: "\\\\\\\\[", right: "\\\\\\\\]", display: true }
-        ],
-        throwOnError: false
-      });
-    } catch(e) { console.warn("KaTeX error:", e); }
+  if (typeof katex !== "undefined") {
+    document.querySelectorAll("span.math[data-math]").forEach(function(span) {
+      try {
+        katex.render(span.dataset.math, span, {
+          displayMode: span.classList.contains("math-display"),
+          throwOnError: false
+        });
+      } catch(e) {
+        span.textContent = span.dataset.math;
+      }
+    });
   }
   if (typeof mermaid !== "undefined") {
     try {

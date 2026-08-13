@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:webview_flutter_android/webview_flutter_android.dart' as android_webview;
 import 'models.dart';
 import 'render_service.dart';
 import 'ui_utils.dart';
@@ -56,14 +57,14 @@ class _ArtifactViewerPageState extends State<ArtifactViewerPage> {
   void _setupWebView(String html) {
     final controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setBackgroundColor(const Color(0xFF0A0A0A))
+      ..enableZoom(true)
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageFinished: (_) {
             if (mounted) setState(() => _renderReady = true);
           },
           onWebResourceError: (err) {
-            // Only treat main-frame errors as fatal. Sub-resource failures
-            // (CDN scripts, images, etc.) should not break the whole view.
             if (err.isForMainFrame == true && mounted) {
               setState(() => _renderError = err.description);
             }
@@ -78,10 +79,17 @@ class _ArtifactViewerPageState extends State<ArtifactViewerPage> {
           },
         ),
       )
-      // Use about:blank as base URL to avoid Android WebView attempting
-      // a real network connection to the origin. All resource URLs in the
-      // rendered HTML are absolute CDN paths, so no base URL is needed.
       ..loadHtmlString(html, baseUrl: 'about:blank');
+
+    // Android-specific WebView configuration.
+    final androidController = controller.platform as android_webview.AndroidWebViewController;
+    androidController.setMediaPlaybackRequiresUserGesture(false);
+    androidController.setTextZoom(100);
+    androidController.setUseWideViewPort(true);
+    androidController.setMixedContentMode(android_webview.MixedContentMode.alwaysAllow);
+    androidController.setAllowFileAccess(false);
+    androidController.setAllowContentAccess(false);
+
     _webViewController = controller;
   }
 

@@ -34,7 +34,7 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthService>();
-    final userLabel = auth.isGuest ? 'Guest' : auth.username ?? 'User';
+    final userLabel = auth.isGuest ? 'Guest' : auth.displayName;
     final hasError = auth.error != null && auth.error!.isNotEmpty;
 
     final recent = [...auth.artifacts]

@@ -1,4 +1,3 @@
-import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'auth_service.dart';
@@ -270,24 +269,31 @@ class _LibraryPageState extends State<LibraryPage> {
             children: [
               const SheetHandle(),
               const SizedBox(height: 8),
-              ListTile(
-                leading: const Icon(Icons.open_in_new, color: kWhite70),
-                title: const Text('Open in Web Viewer', style: TextStyle(color: kWhite)),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  art.content.isNotEmpty
-                      ? _openArtifact(art)
-                      : null;
-                },
+              // Artifact title header
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                child: Text(
+                  art.title,
+                  style: const TextStyle(
+                    fontSize: 15, fontWeight: FontWeight.w700, color: kWhite70,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
+              const SizedBox(height: 4),
+              // Move to Category
               ListTile(
-                leading: const Icon(Icons.copy, color: kWhite70),
-                title: const Text('Copy Link', style: TextStyle(color: kWhite)),
+                leading: const Icon(Icons.drive_file_rename_outline_rounded, color: kWhite70),
+                title: const Text('Move to Category', style: TextStyle(color: kWhite)),
+                trailing: const Icon(Icons.chevron_right, color: kWhite38, size: 20),
                 onTap: () {
                   Navigator.pop(ctx);
+                  _showMoveCategorySheet(art);
                 },
               ),
               const GlassDivider(),
+              // Delete
               ListTile(
                 leading: const Icon(Icons.delete_outline, color: Color(0xFFEF4444)),
                 title: const Text('Delete', style: TextStyle(color: Color(0xFFEF4444))),
@@ -311,6 +317,99 @@ class _LibraryPageState extends State<LibraryPage> {
       ),
     );
   }
+
+  void _showMoveCategorySheet(Artifact art) {
+    final auth = context.read<AuthService>();
+    final cats = auth.categories.map((c) => c.name).toSet().toList()..sort();
+    final currentCat = art.category;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      barrierColor: kCrimson.withOpacity(0.05),
+      builder: (ctx) => GlassSheet(
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SheetHandle(),
+              const SizedBox(height: 12),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: Text(
+                  'Move to Category',
+                  style: TextStyle(
+                    fontSize: 18, fontWeight: FontWeight.w700, color: kWhite,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // Uncategorized option
+              _CategoryOption(
+                label: 'Uncategorized',
+                icon: Icons.label_off_outlined,
+                isSelected: currentCat.isEmpty,
+                onTap: () {
+                  Navigator.pop(ctx);
+                  if (currentCat.isNotEmpty) {
+                    auth.updateArtifactCategory(art.id, '');
+                  }
+                },
+              ),
+
+              // Existing categories
+              ...cats.map((cat) => _CategoryOption(
+                label: cat,
+                icon: Icons.label_outline,
+                isSelected: currentCat == cat,
+                onTap: () {
+                  Navigator.pop(ctx);
+                  if (currentCat != cat) {
+                    auth.updateArtifactCategory(art.id, cat);
+                  }
+                },
+              )),
+
+              const SizedBox(height: 12),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CategoryOption extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _CategoryOption({
+    required this.label,
+    required this.icon,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: Icon(icon, color: isSelected ? kCrimson : kWhite54),
+      title: Text(
+        label,
+        style: TextStyle(
+          color: isSelected ? kCrimson : kWhite,
+          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
+        ),
+      ),
+      trailing: isSelected
+          ? const Icon(Icons.check_rounded, color: kCrimson, size: 20)
+          : null,
+      onTap: onTap,
+    );
+  }
 }
 
 class _ViewToggleBtn extends StatelessWidget {
@@ -318,7 +417,11 @@ class _ViewToggleBtn extends StatelessWidget {
   final bool active;
   final VoidCallback onTap;
 
-  const _ViewToggleBtn({required this.icon, required this.active, required this.onTap});
+  const _ViewToggleBtn({
+    required this.icon,
+    required this.active,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {

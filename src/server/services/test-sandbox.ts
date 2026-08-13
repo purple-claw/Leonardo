@@ -168,6 +168,74 @@ async function run() {
     assert(r.includes("&lt;script&gt;"), "should be escaped");
   });
 
+  console.log();
+
+  // --- Markdown rendering correctness ---
+  console.log("-- Markdown Tests --");
+
+  const renderMd = (content: string) => renderArtifact({ content, type: "md", title: "MD" });
+
+  await test("md: inline math \\(x^2\\) survives markdown escaping", async () => {
+    const r = await renderMd(String.raw`Inline \(x^2\) and display \[y = mx + b\].`);
+    assert(r.includes(`data-math="x^2"`), `math lost: ${r.slice(0, 300)}`);
+    assert(r.includes(`data-math="y = mx + b"`), "display math lost");
+  });
+
+  await test("md: math keeps its markers after rendering", async () => {
+    const r = await renderMd(String.raw`$x$ math.`);
+    assert(r.includes(`data-math="x"`), "should keep math markers");
+    assert(!r.includes("§§LEOMATH"), "placeholder must not leak");
+  });
+
+  await test("md: block math is not wrapped in <em>", async () => {
+    const r = await renderMd("Before\n\n$$x = 1$$\n\nAfter");
+    assert(r.includes(`<span class="math math-display" data-math="x = 1">`), "math placed inside em");
+    assert(!r.includes("<em>"), "should not have em wrapper");
+  });
+
+  await test("md: inline math is not wrapped in <em>", async () => {
+    const r = await renderMd("Before *$x$* after");
+    assert(r.includes(`<span class="math math-inline" data-math="x">`), "math placed inside em");
+    assert(!r.includes("<em>"), "should not have em wrapper");
+  });
+
+  await test("md: typographer does not corrupt math", async () => {
+    const r = await renderMd(String.raw`$f'$ ok`);
+    assert(r.includes(`data-math="f'"`), "sym quote corrupted math");
+    assert(!r.includes("&rsquo;"), "should not have curly quote in math");
+  });
+
+  await test("md: math inside code fences stays literal", async () => {
+    const r = await renderMd("```\n$x = 1$\n```");
+    assert(r.includes("$x = 1$"), "should keep $ in code");
+    assert(!r.includes('<span class="math'), "should not extract from fenced code");
+  });
+
+  await test("md: code fences containing ``` stay inside the highlighted block", async () => {
+    const r = await renderMd("```ts\ncode;\n```\n// out\n");
+    assert(r.includes("// out"), "content after fence lost");
+  });
+
+  await test("md: fenced code language attr is escaped", async () => {
+    const r = await renderMd('```js" onmouseover="alert(1)\nvar x = 1;\n```');
+    assert(!r.includes('js" onmouseover'), "lang attr injection");
+    assert(r.includes("var x = 1;"), "code content should render");
+  });
+
+  await test("md: task lists render checkboxes", async () => {
+    const r = await renderMd("- [x] done\n- [ ] todo");
+    assert(r.includes('<input type="checkbox" checked disabled>'), "checked box missing");
+    assert(r.includes('<input type="checkbox" disabled>'), "unchecked box missing");
+    assert(!r.includes("<li>[x]"), "raw task marker left behind");
+  });
+
+  await test("md: garbage math is left as text, not math", async () => {
+    const r = await renderMd("x = $1,000$ and $ horses");
+    assert(!r.includes('<span class="math'), "should not extract numeric or unclosed math");
+    assert(r.includes("$1,000$"), "should keep raw $ text");
+    assert(r.includes("$ horses"), "should keep unclosed $");
+  });
+
   console.log(`\n=== Done (${failures} failures) ===`);
   process.exitCode = failures;
 }

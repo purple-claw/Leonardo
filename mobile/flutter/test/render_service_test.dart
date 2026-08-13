@@ -202,6 +202,58 @@ void main() {
     });
   });
 
+  group('Math wrappers', () {
+    test('display math on its own line is not wrapped in <p>', () async {
+      final r = await service.render(
+        content: 'Before\n\n\u0024\u0024x = 1\u0024\u0024\n\nAfter',
+        type: 'md',
+      );
+      expect(r.webViewHtml, contains('<span class="math math-display" data-math="x = 1">'));
+      expect(r.webViewHtml, isNot(contains('<p><span class="math math-display"')));
+      expect(r.webViewHtml, isNot(contains('<em><span class="math math-display"')));
+    });
+
+    test('inline math next to emphasis is not italicized', () async {
+      final r = await service.render(
+        content: 'Before *\u0024x\u0024* after',
+        type: 'md',
+      );
+      expect(r.webViewHtml, contains('<span class="math math-inline" data-math="x">'));
+      expect(r.webViewHtml, isNot(contains('<em><span class="math math-inline"')));
+    });
+
+    test('emphasis around math still renders the emphasis text', () async {
+      final r = await service.render(
+        content: 'Look at *this \u0024x\u0024 is math* inline',
+        type: 'md',
+      );
+      expect(r.webViewHtml, contains('<em>this '));
+      expect(r.webViewHtml, contains(' is math</em>'));
+    });
+  });
+
+  group('Code safety', () {
+    test('fenced code language attribute is escaped', () async {
+      final r = await service.render(
+        content: '```js" onmouseover="alert(1)\nvar x = 1;\n```',
+        type: 'md',
+      );
+      expect(r.webViewHtml, contains('language-js&quot;'));
+      expect(r.webViewHtml, isNot(contains('class="language-js"')));
+      expect(r.webViewHtml, contains('var x = 1;'));
+    });
+  });
+
+  group('Footnotes', () {
+    test('footnote definitions render as blockquote text', () async {
+      final r = await service.render(
+        content: 'Here is a note[^1].\n\n[^1]: The note body.',
+        type: 'md',
+      );
+      expect(r.webViewHtml, contains('The note body.'));
+    });
+  });
+
   group('Mixed content', () {
     test('renders complex document with headings, code, math, lists', () async {
       final r = await service.render(
@@ -279,13 +331,16 @@ def hello():
       expect(r.webViewHtml, contains('<code>Just some text</code>'));
     });
 
-    test('handles JSX type gracefully', () async {
+    test('handles JSX type with full babel pipeline', () async {
       final r = await service.render(
         content: 'const x = <div>hello</div>;',
         type: 'jsx',
       );
-      expect(r.webViewHtml, contains('<code>'));
-      expect(r.webViewHtml, contains('JSX preview'));
+      // Should produce a full WebView template with Babel + import map + mount script
+      expect(r.webViewHtml, contains('__leo_source'));
+      expect(r.webViewHtml, contains('babel.min.js'));
+      expect(r.webViewHtml, contains('import { createRoot }'));
+      expect(r.webViewHtml, contains('Babel.transform'));
     });
   });
 }

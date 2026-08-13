@@ -14,8 +14,9 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    // Some plugins (file_picker) may be compiled against older SDKs.
-    // This allows using them with a newer compileSdk.
+    buildFeatures {
+        buildConfig = true
+    }
 
 
     defaultConfig {

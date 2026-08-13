@@ -6,6 +6,7 @@ import 'models.dart';
 class AuthService extends ChangeNotifier {
   String? _token;
   String? _username;
+  String? _displayName;
   bool _loading = false;
   String? _error;
   bool _guestMode = false;
@@ -16,6 +17,7 @@ class AuthService extends ChangeNotifier {
   List<Artifact> get artifacts => _artifacts;
   List<Category> _categories = [];
   List<Category> get categories => _categories;
+  List<String> _extraCategories = []; // categories with no artifacts yet
 
   int get totalWords =>
       _artifacts.fold(0, (sum, a) => sum + a.wordCount);
@@ -34,6 +36,18 @@ class AuthService extends ChangeNotifier {
   bool get isGuest => _guestMode;
   bool get isDriveMode => _driveMode;
 
+  /// The user's chosen display name, or 'User' as fallback.
+  String get displayName => _displayName ?? 'User';
+
+  /// Update the user's display name and persist it.
+  void setDisplayName(String name) {
+    _displayName = name.trim().isEmpty ? 'User' : name.trim();
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setString('display_name', _displayName!);
+    });
+    notifyListeners();
+  }
+
   bool _loadingDrive = false; // guard against concurrent loadFromDrive
 
   AuthService() {
@@ -44,7 +58,9 @@ class AuthService extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     _token = prefs.getString('auth_token');
     _username = prefs.getString('auth_username');
+    _displayName = prefs.getString('display_name');
     _driveMode = prefs.getBool('drive_mode') ?? false;
+    _extraCategories = prefs.getStringList('extra_categories') ?? [];
     if (_driveMode && _username == null) {
       _username = prefs.getString('drive_email');
     }
@@ -75,13 +91,17 @@ class AuthService extends ChangeNotifier {
   Future<void> logout() async {
     _token = null;
     _username = null;
+    _displayName = null;
     _guestMode = false;
     _driveMode = false;
     _artifacts = [];
     _categories = [];
+    _extraCategories = [];
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('auth_token');
     await prefs.remove('auth_username');
+    await prefs.remove('display_name');
+    await prefs.remove('extra_categories');
     await prefs.remove('drive_mode');
     try {
       await DriveService().signOut();
@@ -164,6 +184,12 @@ class AuthService extends ChangeNotifier {
         map[a.category] = (map[a.category] ?? 0) + 1;
       }
     }
+    // Also include extra categories (defined but no artifacts yet)
+    for (final name in _extraCategories) {
+      if (!map.containsKey(name)) {
+        map[name] = 0;
+      }
+    }
     final entries = map.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
     _categories = entries
@@ -219,12 +245,21 @@ class AuthService extends ChangeNotifier {
   }
 
   Future<void> addCategory(String name) async {
-    // Just ensure at least one artifact has this category
-    // If no artifacts exist, we don't persist empty categories
-    if (_artifacts.any((a) => a.category == name)) return;
-    // Create a placeholder if needed — or just rebuild from data
+    final cleaned = name.trim().toLowerCase().replaceAll(RegExp(r'\s+'), '-');
+    if (cleaned.isEmpty) return;
+    // Already exists in artifacts or extra list?
+    if (_artifacts.any((a) => a.category == cleaned)) return;
+    if (_extraCategories.contains(cleaned)) return;
+    _extraCategories.add(cleaned);
+    _saveExtraCategories();
     _rebuildCategories();
     notifyListeners();
+  }
+
+  void _saveExtraCategories() {
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setStringList('extra_categories', _extraCategories);
+    });
   }
 
   Future<void> deleteCategory(String name) async {
@@ -245,6 +280,32 @@ class AuthService extends ChangeNotifier {
         );
       }
     }
+    _rebuildCategories();
+    await _saveToDrive();
+    notifyListeners();
+  }
+
+  /// Move an artifact to a different category.
+  Future<void> updateArtifactCategory(String artifactId, String newCategory) async {
+    final idx = _artifacts.indexWhere((a) => a.id == artifactId);
+    if (idx == -1) return;
+    final a = _artifacts[idx];
+    _artifacts[idx] = Artifact(
+      id: a.id,
+      title: a.title,
+      type: a.type,
+      createdAt: a.createdAt,
+      updatedAt: DateTime.now().toIso8601String(),
+      content: a.content,
+      desc: a.desc,
+      category: newCategory,
+      tags: a.tags,
+      wordCount: a.wordCount,
+      readTimeMin: a.readTimeMin,
+    );
+    // If this category was an extra category with no artifacts, remove from extras
+    _extraCategories.remove(newCategory);
+    _saveExtraCategories();
     _rebuildCategories();
     await _saveToDrive();
     notifyListeners();
