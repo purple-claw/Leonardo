@@ -81,14 +81,16 @@ class _ArtifactViewerPageState extends State<ArtifactViewerPage> {
       )
       ..loadHtmlString(html, baseUrl: 'about:blank');
 
-    // Android-specific WebView configuration.
-    final androidController = controller.platform as android_webview.AndroidWebViewController;
-    androidController.setMediaPlaybackRequiresUserGesture(false);
-    androidController.setTextZoom(100);
-    androidController.setUseWideViewPort(true);
-    androidController.setMixedContentMode(android_webview.MixedContentMode.alwaysAllow);
-    androidController.setAllowFileAccess(false);
-    androidController.setAllowContentAccess(false);
+    // Android-specific WebView configuration — guard for non-Android.
+    if (controller.platform is android_webview.AndroidWebViewController) {
+      final androidController = controller.platform as android_webview.AndroidWebViewController;
+      androidController.setMediaPlaybackRequiresUserGesture(false);
+      androidController.setTextZoom(100);
+      androidController.setUseWideViewPort(true);
+      androidController.setMixedContentMode(android_webview.MixedContentMode.alwaysAllow);
+      androidController.setAllowFileAccess(false);
+      androidController.setAllowContentAccess(false);
+    }
 
     _webViewController = controller;
   }
@@ -96,18 +98,35 @@ class _ArtifactViewerPageState extends State<ArtifactViewerPage> {
   @override
   Widget build(BuildContext context) {
     final art = widget.artifact;
-
     return Scaffold(
       backgroundColor: kBgPureBlack,
       appBar: AppBar(
-        backgroundColor: kBgNearBlack,
-        title: Text(art.title, style: const TextStyle(color: kWhite)),
+        backgroundColor: kBgNearBlack.withValues(alpha: 0.95),
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+        title: Text(art.title,
+            style: const TextStyle(color: kWhite, fontWeight: FontWeight.w700, fontSize: 16),
+            maxLines: 1, overflow: TextOverflow.ellipsis),
         iconTheme: const IconThemeData(color: kWhite70),
+        flexibleSpace: ClipRect(
+          child: BackdropFilter(
+            filter: ui.ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+            child: Container(color: Colors.transparent),
+          ),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.copy_outlined, color: kWhite54),
             tooltip: 'Copy content',
             onPressed: _copyContent,
+          ),
+          IconButton(
+            icon: const Icon(Icons.open_in_new, color: kWhite54),
+            tooltip: 'Copy & share',
+            onPressed: () {
+              Clipboard.setData(ClipboardData(text: art.content));
+              showToast(context, 'Copied — ready to share', style: ToastStyle.success);
+            },
           ),
         ],
       ),

@@ -38,8 +38,8 @@ class _LoginPageState extends State<LoginPage> {
                   center: const Alignment(0.3, 0.3),
                   radius: 0.8,
                   colors: [
-                    kCrimson.withOpacity(0.15),
-                    kCrimson.withOpacity(0.05),
+                    kCrimson.withValues(alpha: 0.15),
+                    kCrimson.withValues(alpha: 0.05),
                     Colors.transparent,
                   ],
                 ),
@@ -60,7 +60,7 @@ class _LoginPageState extends State<LoginPage> {
                   center: const Alignment(-0.3, -0.3),
                   radius: 0.8,
                   colors: [
-                    kCrimson.withOpacity(0.08),
+                    kCrimson.withValues(alpha: 0.08),
                     Colors.transparent,
                   ],
                 ),
@@ -82,15 +82,15 @@ class _LoginPageState extends State<LoginPage> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 36),
                       decoration: BoxDecoration(
-                        color: kBgNearBlack.withOpacity(0.75),
+                        color: kBgNearBlack.withValues(alpha: 0.75),
                         borderRadius: BorderRadius.circular(28),
                         border: Border.all(
-                          color: kWhite.withOpacity(0.08),
+                          color: kWhite.withValues(alpha: 0.08),
                           width: 0.5,
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: kCrimson.withOpacity(0.12),
+                            color: kCrimson.withValues(alpha: 0.12),
                             blurRadius: 60,
                             offset: const Offset(0, 20),
                           ),
@@ -109,7 +109,7 @@ class _LoginPageState extends State<LoginPage> {
                                 borderRadius: BorderRadius.circular(24),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: kCrimson.withOpacity(0.3),
+                                    color: kCrimson.withValues(alpha: 0.3),
                                     blurRadius: 40,
                                     offset: const Offset(0, 12),
                                   ),
@@ -185,12 +185,12 @@ class _LoginPageState extends State<LoginPage> {
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(12),
                                     border: Border.all(
-                                      color: kWhite.withOpacity(0.1),
+                                      color: kWhite.withValues(alpha: 0.1),
                                       width: 0.5,
                                     ),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: kCrimson.withOpacity(0.06),
+                                        color: kCrimson.withValues(alpha: 0.06),
                                         blurRadius: 12,
                                         offset: const Offset(0, 4),
                                       ),
@@ -202,19 +202,24 @@ class _LoginPageState extends State<LoginPage> {
                                       filter: ui.ImageFilter.blur(sigmaX: 6, sigmaY: 6),
                                       child: Row(
                                         mainAxisAlignment: MainAxisAlignment.center,
+                                        mainAxisSize: MainAxisSize.min,
                                         children: [
                                           Icon(
                                             Icons.person_outline,
-                                            size: 16,
-                                            color: kWhite.withOpacity(0.7),
+                                            size: 14,
+                                            color: kWhite.withValues(alpha: 0.7),
                                           ),
                                           const SizedBox(width: 6),
-                                          Text(
-                                            'Continue as guest',
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w600,
-                                              color: kWhite.withOpacity(0.7),
+                                          Flexible(
+                                            child: Text(
+                                              'Continue as guest',
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w600,
+                                                color: kWhite.withValues(alpha: 0.7),
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
                                             ),
                                           ),
                                         ],

@@ -48,9 +48,9 @@ class TypeBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
-        color: c.withOpacity(0.12),
+        color: c.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: c.withOpacity(0.3), width: 0.5),
+        border: Border.all(color: c.withValues(alpha: 0.3), width: 0.5),
       ),
       child: Text(type.toUpperCase(), style: TextStyle(
         fontSize: fontSize, fontWeight: FontWeight.w700, color: c,
@@ -158,14 +158,14 @@ class ArtifactListRow extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
         decoration: BoxDecoration(
-          border: Border(bottom: BorderSide(color: kWhite.withOpacity(0.04), width: 0.5)),
+          border: Border(bottom: BorderSide(color: kWhite.withValues(alpha: 0.04), width: 0.5)),
         ),
         child: Row(
           children: [
             Container(
               width: 36, height: 36,
               decoration: BoxDecoration(
-                color: typeColor(artifact.type).withOpacity(0.12),
+                color: typeColor(artifact.type).withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(typeIcon(artifact.type), size: 18, color: typeColor(artifact.type)),
@@ -185,7 +185,7 @@ class ArtifactListRow extends StatelessWidget {
                         margin: const EdgeInsets.only(right: 4),
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                         decoration: BoxDecoration(
-                          color: kCrimson.withOpacity(0.15),
+                          color: kCrimson.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(3),
                         ),
                         child: Text(t, style: const TextStyle(

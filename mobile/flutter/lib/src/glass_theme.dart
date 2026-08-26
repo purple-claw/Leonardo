@@ -46,7 +46,7 @@ BoxDecoration glassDeco({
   List<BoxShadow>? shadows,
 }) {
   return BoxDecoration(
-    color: Colors.white.withOpacity(opacity),
+    color: Colors.white.withValues(alpha: opacity),
     borderRadius: BorderRadius.circular(radius),
     border: Border.all(
       color: borderColor ?? kGlassBorder,
@@ -64,15 +64,15 @@ BoxDecoration glassDecoActive({
   double glowRadius = 24,
 }) {
   return BoxDecoration(
-    color: kCrimson.withOpacity(opacity),
+    color: kCrimson.withValues(alpha: opacity),
     borderRadius: BorderRadius.circular(radius),
     border: Border.all(
-      color: kCrimson.withOpacity(0.4),
+      color: kCrimson.withValues(alpha: 0.4),
       width: borderWidth,
     ),
     boxShadow: [
       BoxShadow(
-        color: kCrimson.withOpacity(0.25),
+        color: kCrimson.withValues(alpha: 0.25),
         blurRadius: glowRadius,
         offset: const Offset(0, 6),
       ),
@@ -90,12 +90,12 @@ BoxDecoration glassGradientDeco({
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
       colors: accent
-          ? [kCrimson.withOpacity(0.12), kBgPureBlack.withOpacity(0.2)]
-          : [kWhite.withOpacity(0.04), kBgPureBlack.withOpacity(0.1)],
+          ? [kCrimson.withValues(alpha: 0.12), kBgPureBlack.withValues(alpha: 0.2)]
+          : [kWhite.withValues(alpha: 0.04), kBgPureBlack.withValues(alpha: 0.1)],
     ),
     borderRadius: BorderRadius.circular(radius),
     border: Border.all(
-      color: accent ? kCrimson.withOpacity(0.2) : kGlassBorder,
+      color: accent ? kCrimson.withValues(alpha: 0.2) : kGlassBorder,
       width: 0.5,
     ),
   );
@@ -105,7 +105,7 @@ BoxDecoration glassGradientDeco({
 List<BoxShadow> crimsonGlow({double blur = 24, double opacity = 0.2}) {
   return [
     BoxShadow(
-      color: kCrimson.withOpacity(opacity),
+      color: kCrimson.withValues(alpha: opacity),
       blurRadius: blur,
       offset: const Offset(0, 6),
     ),
@@ -235,21 +235,21 @@ class GlassButton extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: disabled
-                ? [kWhite.withOpacity(0.04), kWhite.withOpacity(0.02)]
-                : [kCrimson.withOpacity(0.9), kCrimsonDark.withOpacity(0.8)],
+                ? [kWhite.withValues(alpha: 0.04), kWhite.withValues(alpha: 0.02)]
+                : [kCrimson.withValues(alpha: 0.9), kCrimsonDark.withValues(alpha: 0.8)],
           ),
           borderRadius: BorderRadius.circular(radius),
           border: Border.all(
             color: disabled
-                ? kWhite.withOpacity(0.08)
-                : kCrimson.withOpacity(0.5),
+                ? kWhite.withValues(alpha: 0.08)
+                : kCrimson.withValues(alpha: 0.5),
             width: disabled ? 0.5 : 0.8,
           ),
           boxShadow: disabled
               ? null
               : [
                   BoxShadow(
-                    color: kCrimson.withOpacity(0.35),
+                    color: kCrimson.withValues(alpha: 0.35),
                     blurRadius: 20,
                     offset: const Offset(0, 6),
                   ),
@@ -261,6 +261,7 @@ class GlassButton extends StatelessWidget {
             filter: ui.ImageFilter.blur(sigmaX: 6, sigmaY: 6),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 if (loading)
                   const SizedBox(
@@ -273,15 +274,19 @@ class GlassButton extends StatelessWidget {
                   )
                 else ...[
                   if (icon != null) ...[
-                    Icon(icon, size: 20, color: kWhite),
-                    const SizedBox(width: 10),
+                    Icon(icon, size: 18, color: kWhite),
+                    const SizedBox(width: 8),
                   ],
-                  Text(
-                    label,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: kWhite,
+                  Flexible(
+                    child: Text(
+                      label,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: kWhite,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
@@ -403,7 +408,7 @@ class GlassDivider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Divider(
-      color: kWhite.withOpacity(0.06),
+      color: kWhite.withValues(alpha: 0.06),
       thickness: thickness,
       height: 1,
     );
@@ -424,7 +429,7 @@ class SheetHandle extends StatelessWidget {
       width: 40,
       height: 4,
       decoration: BoxDecoration(
-        color: kWhite.withOpacity(0.15),
+        color: kWhite.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(2),
       ),
     );
@@ -448,10 +453,10 @@ class GlassSheet extends StatelessWidget {
         filter: ui.ImageFilter.blur(sigmaX: 20, sigmaY: 20),
         child: Container(
           decoration: BoxDecoration(
-            color: kBgNearBlack.withOpacity(0.92),
+            color: kBgNearBlack.withValues(alpha: 0.92),
             border: Border(
               top: BorderSide(
-                color: kWhite.withOpacity(0.06),
+                color: kWhite.withValues(alpha: 0.06),
                 width: 0.5,
               ),
             ),

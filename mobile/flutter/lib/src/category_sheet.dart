@@ -107,7 +107,7 @@ class _CategorySheetState extends State<CategorySheet> {
                           margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 2),
                           decoration: BoxDecoration(
                             border: Border(
-                              bottom: BorderSide(color: kWhite.withOpacity(0.04), width: 0.5),
+                              bottom: BorderSide(color: kWhite.withValues(alpha: 0.04), width: 0.5),
                             ),
                           ),
                           child: ListTile(

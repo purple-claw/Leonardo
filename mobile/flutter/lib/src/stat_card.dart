@@ -27,12 +27,12 @@ class StatCard extends StatelessWidget {
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: accent
-                  ? [kCrimson.withOpacity(0.1), kBgPureBlack.withOpacity(0.2)]
-                  : [kWhite.withOpacity(0.04), kBgPureBlack.withOpacity(0.1)],
+                  ? [kCrimson.withValues(alpha: 0.1), kBgPureBlack.withValues(alpha: 0.2)]
+                  : [kWhite.withValues(alpha: 0.04), kBgPureBlack.withValues(alpha: 0.1)],
             ),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: accent ? kCrimson.withOpacity(0.2) : kGlassBorder,
+              color: accent ? kCrimson.withValues(alpha: 0.2) : kGlassBorder,
               width: 0.5,
             ),
           ),

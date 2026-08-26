@@ -85,9 +85,9 @@ class _LibraryPageState extends State<LibraryPage> {
                 ),
                 Container(
                   decoration: BoxDecoration(
-                    color: kWhite.withOpacity(0.06),
+                    color: kWhite.withValues(alpha: 0.06),
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: kWhite.withOpacity(0.08), width: 0.5),
+                    border: Border.all(color: kWhite.withValues(alpha: 0.08), width: 0.5),
                   ),
                   child: Row(
                     children: [
@@ -261,7 +261,7 @@ class _LibraryPageState extends State<LibraryPage> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      barrierColor: kCrimson.withOpacity(0.05),
+      barrierColor: kCrimson.withValues(alpha: 0.05),
       builder: (ctx) => GlassSheet(
         child: SafeArea(
           child: Column(
@@ -326,7 +326,7 @@ class _LibraryPageState extends State<LibraryPage> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      barrierColor: kCrimson.withOpacity(0.05),
+      barrierColor: kCrimson.withValues(alpha: 0.05),
       builder: (ctx) => GlassSheet(
         child: SafeArea(
           child: Column(
@@ -430,7 +430,7 @@ class _ViewToggleBtn extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: active ? kCrimson.withOpacity(0.2) : Colors.transparent,
+          color: active ? kCrimson.withValues(alpha: 0.2) : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Icon(icon, size: 18,
@@ -462,10 +462,10 @@ class _FilterChip extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-            color: active ? kCrimson.withOpacity(0.15) : kWhite.withOpacity(0.04),
+            color: active ? kCrimson.withValues(alpha: 0.15) : kWhite.withValues(alpha: 0.04),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: active ? kCrimson.withOpacity(0.4) : kWhite.withOpacity(0.08),
+              color: active ? kCrimson.withValues(alpha: 0.4) : kWhite.withValues(alpha: 0.08),
               width: 0.5,
             ),
           ),

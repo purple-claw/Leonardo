@@ -43,83 +43,91 @@ class _DashboardPageState extends State<DashboardPage> {
     final totalArts = auth.artifacts.length;
 
     return SafeArea(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(0, 8, 0, 100),
-        child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // ── Hero Section ──
-          _HeroSection(
-            userLabel: userLabel,
-            artifactCount: totalArts,
-            totalWords: auth.totalWords,
-            thisWeek: auth.thisWeekCount,
-            categories: auth.categories.length,
-            isDriveMode: auth.isDriveMode,
-            onRefresh: auth.isLoading ? null : _load,
+      child: RefreshIndicator(
+        color: kCrimson,
+        backgroundColor: kBgNearBlack,
+        onRefresh: _load,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(0, 8, 0, 100),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ── Hero Section ──
+              _HeroSection(
+                userLabel: userLabel,
+                artifactCount: totalArts,
+                totalWords: auth.totalWords,
+                thisWeek: auth.thisWeekCount,
+                categories: auth.categories.length,
+                isDriveMode: auth.isDriveMode,
+                onRefresh: auth.isLoading ? null : _load,
+              ),
+
+              // ── Loading ──
+              if (auth.isLoading && !_initialLoadDone)
+                const Center(
+                    child: Padding(
+                  padding: EdgeInsets.all(60),
+                  child: CircularProgressIndicator(color: kCrimson),
+                ))
+
+              // ── Error ──
+              else if (hasError && auth.artifacts.isEmpty)
+                _buildError(auth)
+
+              // ── Content ──
+              else ...[
+                if (hasError) _buildErrorBanner(auth),
+
+                // Recent Activity
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                  child: SectionHeader(
+                    title: 'Continue Creating',
+                    onViewAll: () {},
+                  ),
+                ),
+                const SizedBox(height: 12),
+                if (recent5.isEmpty)
+                  _buildEmpty(auth.isDriveMode)
+                else
+                  ...recent5.map((art) => _RecentTile(
+                        artifact: art,
+                        onTap: () => Navigator.pushNamed(context, '/viewer',
+                            arguments: art),
+                      )),
+
+                const SizedBox(height: 28),
+
+                // Quick Actions
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                  child: SectionHeader(title: 'Quick Actions'),
+                ),
+                const SizedBox(height: 12),
+                _QuickActionGrid(
+                  onPasteCode: () => showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                    barrierColor: kCrimson.withValues(alpha: 0.05),
+                    builder: (_) => const GlassSheet(child: NewArtifactSheet()),
+                  ),
+                  onManageCategories: () => showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                    barrierColor: kCrimson.withValues(alpha: 0.05),
+                    builder: (_) => const GlassSheet(child: CategorySheet()),
+                  ),
+                ),
+              ],
+            ],
           ),
-
-          // ── Loading ──
-          if (auth.isLoading && !_initialLoadDone)
-            const Center(child: Padding(
-              padding: EdgeInsets.all(60),
-              child: CircularProgressIndicator(color: kCrimson),
-            ))
-
-          // ── Error ──
-          else if (hasError && auth.artifacts.isEmpty)
-            _buildError(auth)
-
-          // ── Content ──
-          else ...[
-            if (hasError) _buildErrorBanner(auth),
-
-            // Recent Activity
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-              child: SectionHeader(
-                title: 'Continue Creating',
-                onViewAll: () {},
-              ),
-            ),
-            const SizedBox(height: 12),
-            if (recent5.isEmpty)
-              _buildEmpty(auth.isDriveMode)
-            else
-              ...recent5.map((art) => _RecentTile(
-                artifact: art,
-                onTap: () => Navigator.pushNamed(context, '/viewer', arguments: art),
-              )),
-
-            const SizedBox(height: 28),
-
-            // Quick Actions
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-              child: SectionHeader(title: 'Quick Actions'),
-            ),
-            const SizedBox(height: 12),
-            _QuickActionGrid(
-              onPasteCode: () => showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                backgroundColor: Colors.transparent,
-                barrierColor: kCrimson.withOpacity(0.05),
-                builder: (_) => const GlassSheet(child: NewArtifactSheet()),
-              ),
-              onManageCategories: () => showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                backgroundColor: Colors.transparent,
-                barrierColor: kCrimson.withOpacity(0.05),
-                builder: (_) => const GlassSheet(child: CategorySheet()),
-              ),
-            ),
-          ],
-        ],
+        ),
       ),
-    ),
-  );
+    );
   }
 
   Widget _buildError(AuthService auth) {
@@ -130,12 +138,13 @@ class _DashboardPageState extends State<DashboardPage> {
           GlassCard(
             padding: const EdgeInsets.all(24),
             radius: 20,
-            child: const Icon(Icons.cloud_off_rounded, size: 36, color: Color(0xFFEF4444)),
+            child: const Icon(Icons.cloud_off_rounded,
+                size: 36, color: Color(0xFFEF4444)),
           ),
           const SizedBox(height: 20),
           Text(auth.error ?? 'Could not connect to Drive',
-            style: const TextStyle(color: kWhite54, fontSize: 15),
-            textAlign: TextAlign.center),
+              style: const TextStyle(color: kWhite54, fontSize: 15),
+              textAlign: TextAlign.center),
           const SizedBox(height: 20),
           GlassButton(
             label: 'Retry',
@@ -156,15 +165,18 @@ class _DashboardPageState extends State<DashboardPage> {
         borderColor: const Color(0x33EF4444),
         child: Row(
           children: [
-            const Icon(Icons.warning_amber_rounded, size: 18, color: Color(0xFFEF4444)),
+            const Icon(Icons.warning_amber_rounded,
+                size: 18, color: Color(0xFFEF4444)),
             const SizedBox(width: 10),
             Expanded(
               child: Text(auth.error!,
-                style: const TextStyle(color: Color(0xFFEF4444), fontSize: 13)),
+                  style:
+                      const TextStyle(color: Color(0xFFEF4444), fontSize: 13)),
             ),
             TextButton(
               onPressed: _load,
-              child: const Text('Retry', style: TextStyle(fontSize: 13, color: kCrimson)),
+              child: const Text('Retry',
+                  style: TextStyle(fontSize: 13, color: kCrimson)),
             ),
           ],
         ),
@@ -180,16 +192,21 @@ class _DashboardPageState extends State<DashboardPage> {
         child: Column(
           children: [
             Container(
-              width: 56, height: 56,
+              width: 56,
+              height: 56,
               decoration: BoxDecoration(
-                color: kCrimson.withOpacity(0.15),
+                color: kCrimson.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: const Icon(Icons.library_books_outlined, size: 28, color: kCrimson),
+              child: const Icon(Icons.library_books_outlined,
+                  size: 28, color: kCrimson),
             ),
             const SizedBox(height: 12),
-            const Text('No artifacts yet', style: TextStyle(
-              fontSize: 16, fontWeight: FontWeight.w700, color: kWhite54)),
+            const Text('No artifacts yet',
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: kWhite54)),
             const SizedBox(height: 4),
             Text(
               isDrive
@@ -242,19 +259,19 @@ class _HeroSection extends StatelessWidget {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  kCrimson.withOpacity(0.12),
-                  kBgPureBlack.withOpacity(0.3),
-                  kWhite.withOpacity(0.04),
+                  kCrimson.withValues(alpha: 0.12),
+                  kBgPureBlack.withValues(alpha: 0.3),
+                  kWhite.withValues(alpha: 0.04),
                 ],
               ),
               borderRadius: BorderRadius.circular(28),
               border: Border.all(
-                color: kCrimson.withOpacity(0.2),
+                color: kCrimson.withValues(alpha: 0.2),
                 width: 0.5,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: kCrimson.withOpacity(0.15),
+                  color: kCrimson.withValues(alpha: 0.15),
                   blurRadius: 40,
                   offset: const Offset(0, 10),
                 ),
@@ -270,28 +287,35 @@ class _HeroSection extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Welcome back,', style: TextStyle(
-                            fontSize: 12, color: kWhite54,
-                          )),
+                          Text('Welcome back,',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: kWhite54,
+                              )),
                           const SizedBox(height: 1),
-                          Text(userLabel, style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.w800,
-                            letterSpacing: -0.5,
-                            foreground: Paint()..shader = const LinearGradient(
-                              colors: [kWhite, Color(0xCCFFFFFF)],
-                            ).createShader(const Rect.fromLTWH(0, 0, 200, 32)),
-                          )),
+                          Text(userLabel,
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: -0.5,
+                                foreground: Paint()
+                                  ..shader = const LinearGradient(
+                                    colors: [kWhite, Color(0xCCFFFFFF)],
+                                  ).createShader(
+                                      const Rect.fromLTWH(0, 0, 200, 32)),
+                              )),
                         ],
                       ),
                     ),
                     if (isDriveMode)
                       Container(
                         decoration: BoxDecoration(
-                          color: kWhite.withOpacity(0.06),
+                          color: kWhite.withValues(alpha: 0.06),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: IconButton(
-                          icon: const Icon(Icons.refresh_rounded, size: 20, color: kWhite54),
+                          icon: const Icon(Icons.refresh_rounded,
+                              size: 20, color: kWhite54),
                           tooltip: 'Refresh',
                           onPressed: onRefresh,
                         ),
@@ -302,10 +326,22 @@ class _HeroSection extends StatelessWidget {
                 // Stats bar
                 _StatsBar(
                   items: [
-                    _StatItem(icon: Icons.article_outlined, value: '$artifactCount', label: 'Artifacts'),
-                    _StatItem(icon: Icons.text_fields, value: '$totalWords', label: 'Words'),
-                    _StatItem(icon: Icons.category_outlined, value: '$categories', label: 'Categories'),
-                    _StatItem(icon: Icons.trending_up, value: '$thisWeek', label: 'This Week'),
+                    _StatItem(
+                        icon: Icons.article_outlined,
+                        value: '$artifactCount',
+                        label: 'Artifacts'),
+                    _StatItem(
+                        icon: Icons.text_fields,
+                        value: '$totalWords',
+                        label: 'Words'),
+                    _StatItem(
+                        icon: Icons.category_outlined,
+                        value: '$categories',
+                        label: 'Categories'),
+                    _StatItem(
+                        icon: Icons.trending_up,
+                        value: '$thisWeek',
+                        label: 'This Week'),
                   ],
                 ),
               ],
@@ -325,7 +361,8 @@ class _StatItem {
   final IconData icon;
   final String value;
   final String label;
-  const _StatItem({required this.icon, required this.value, required this.label});
+  const _StatItem(
+      {required this.icon, required this.value, required this.label});
 }
 
 class _StatsBar extends StatelessWidget {
@@ -342,13 +379,14 @@ class _StatsBar extends StatelessWidget {
           child: Row(
             children: [
               Expanded(
-                child: _MiniStat(icon: item.icon, value: item.value, label: item.label),
+                child: _MiniStat(
+                    icon: item.icon, value: item.value, label: item.label),
               ),
               if (!isLast)
                 Container(
                   width: 1,
                   height: 24,
-                  color: Colors.white.withOpacity(0.08),
+                  color: Colors.white.withValues(alpha: 0.08),
                 ),
             ],
           ),
@@ -362,7 +400,8 @@ class _MiniStat extends StatelessWidget {
   final IconData icon;
   final String value;
   final String label;
-  const _MiniStat({required this.icon, required this.value, required this.label});
+  const _MiniStat(
+      {required this.icon, required this.value, required this.label});
 
   @override
   Widget build(BuildContext context) {
@@ -373,18 +412,23 @@ class _MiniStat extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 12, color: kCrimson.withOpacity(0.7)),
+              Icon(icon, size: 12, color: kCrimson.withValues(alpha: 0.7)),
               const SizedBox(width: 4),
-              Text(value, style: const TextStyle(
-                fontSize: 18, fontWeight: FontWeight.w800,
-                color: kWhite, letterSpacing: -0.5,
-              )),
+              Text(value,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: kWhite,
+                    letterSpacing: -0.5,
+                  )),
             ],
           ),
           const SizedBox(height: 2),
-          Text(label, style: const TextStyle(
-            fontSize: 10, color: kWhite38,
-          )),
+          Text(label,
+              style: const TextStyle(
+                fontSize: 10,
+                color: kWhite38,
+              )),
         ],
       ),
     );
@@ -412,19 +456,22 @@ class _RecentTile extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
             border: Border(
-              bottom: BorderSide(color: kWhite.withOpacity(0.04), width: 0.5),
+              bottom:
+                  BorderSide(color: kWhite.withValues(alpha: 0.04), width: 0.5),
             ),
           ),
           child: Row(
             children: [
               // Icon
               Container(
-                width: 40, height: 40,
+                width: 40,
+                height: 40,
                 decoration: BoxDecoration(
-                  color: typeColor(artifact.type).withOpacity(0.12),
+                  color: typeColor(artifact.type).withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(typeIcon(artifact.type), size: 20, color: typeColor(artifact.type)),
+                child: Icon(typeIcon(artifact.type),
+                    size: 20, color: typeColor(artifact.type)),
               ),
               const SizedBox(width: 14),
               // Title + tags
@@ -432,32 +479,44 @@ class _RecentTile extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(artifact.title, style: const TextStyle(
-                      fontWeight: FontWeight.w600, fontSize: 14, color: kWhite,
-                    ), maxLines: 1, overflow: TextOverflow.ellipsis),
+                    Text(artifact.title,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                          color: kWhite,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis),
                     if (tags.isNotEmpty) ...[
                       const SizedBox(height: 4),
                       Row(
-                        children: tags.map((t) => Container(
-                          margin: const EdgeInsets.only(right: 4),
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                          decoration: BoxDecoration(
-                            color: kCrimson.withOpacity(0.15),
-                            borderRadius: BorderRadius.circular(3),
-                          ),
-                          child: Text(t, style: const TextStyle(
-                            fontSize: 10, color: kCrimson,
-                          )),
-                        )).toList(),
+                        children: tags
+                            .map((t) => Container(
+                                  margin: const EdgeInsets.only(right: 4),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 6, vertical: 1),
+                                  decoration: BoxDecoration(
+                                    color: kCrimson.withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(3),
+                                  ),
+                                  child: Text(t,
+                                      style: const TextStyle(
+                                        fontSize: 10,
+                                        color: kCrimson,
+                                      )),
+                                ))
+                            .toList(),
                       ),
                     ],
                   ],
                 ),
               ),
               // Date
-              Text(formatDateShort(artifact.createdAt), style: const TextStyle(
-                fontSize: 11, color: kWhite38,
-              )),
+              Text(formatDateShort(artifact.createdAt),
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: kWhite38,
+                  )),
               const SizedBox(width: 8),
               Icon(Icons.chevron_right, size: 16, color: kWhite24),
             ],
@@ -536,38 +595,50 @@ class _QuickActionCard extends StatelessWidget {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: accent
-                    ? [kCrimson.withOpacity(0.12), kBgPureBlack.withOpacity(0.2)]
-                    : [kWhite.withOpacity(0.04), kBgPureBlack.withOpacity(0.1)],
+                    ? [
+                        kCrimson.withValues(alpha: 0.12),
+                        kBgPureBlack.withValues(alpha: 0.2)
+                      ]
+                    : [
+                        kWhite.withValues(alpha: 0.04),
+                        kBgPureBlack.withValues(alpha: 0.1)
+                      ],
               ),
               borderRadius: BorderRadius.circular(18),
               border: Border.all(
                 color: accent
-                    ? kCrimson.withOpacity(0.25)
-                    : kWhite.withOpacity(0.06),
+                    ? kCrimson.withValues(alpha: 0.25)
+                    : kWhite.withValues(alpha: 0.06),
                 width: 0.5,
               ),
               boxShadow: accent
-                  ? [BoxShadow(
-                      color: kCrimson.withOpacity(0.12),
-                      blurRadius: 16,
-                      offset: const Offset(0, 4),
-                    )]
+                  ? [
+                      BoxShadow(
+                        color: kCrimson.withValues(alpha: 0.12),
+                        blurRadius: 16,
+                        offset: const Offset(0, 4),
+                      )
+                    ]
                   : null,
             ),
             child: Column(
               children: [
                 Container(
-                  width: 44, height: 44,
+                  width: 44,
+                  height: 44,
                   decoration: BoxDecoration(
-                    color: kCrimson.withOpacity(0.12),
+                    color: kCrimson.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Icon(icon, size: 22, color: kCrimson),
                 ),
                 const SizedBox(height: 10),
-                Text(label, style: const TextStyle(
-                  fontSize: 13, fontWeight: FontWeight.w600, color: kWhite70,
-                )),
+                Text(label,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: kWhite70,
+                    )),
               ],
             ),
           ),

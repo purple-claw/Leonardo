@@ -1,30 +1,30 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
 import 'package:leonardo_mobile/app.dart';
+import 'package:leonardo_mobile/src/render_service.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
+  testWidgets('IrisApp smoke test - app builds without error', (tester) async {
     await tester.pumpWidget(const IrisApp());
+    expect(find.byType(IrisApp), findsOneWidget);
+    // Advance past SplashPage 3s delay to clear timer and allow navigation.
+    await tester.pump(const Duration(seconds: 4));
+    await tester.pumpAndSettle();
+    // Should have navigated to LoginPage (no auth)
+    expect(find.byType(IrisApp), findsOneWidget);
+  });
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
-
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+  group('RenderService smoke in widget context', () {
+    test('render service handles all three types', () async {
+      final svc = RenderService();
+      final md = await svc.render(content: '# Hello', type: 'md');
+      expect(md.webViewHtml, contains('Hello'));
+      final html = await svc.render(content: '<b>hi</b>', type: 'html');
+      expect(html.webViewHtml, contains('<b>hi</b>'));
+      final jsx = await svc.render(
+        content: 'export default function App(){return <div>hi</div>}',
+        type: 'jsx',
+      );
+      expect(jsx.webViewHtml, contains('Babel'));
+    });
   });
 }

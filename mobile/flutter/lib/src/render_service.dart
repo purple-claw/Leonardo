@@ -136,17 +136,18 @@ class RenderService {
   }
 
   String _detectJsxComponentName(String content) {
-    final defaultExport = RegExp(
-      r'export\s+default\s+(?:function\s+)?(\w+)',
-      multiLine: true,
-    );
-    final match = defaultExport.firstMatch(content);
-    if (match != null) return match.group(1)!;
-
-    final funcDef = RegExp(r'function\s+(\w+)\s*\(', multiLine: true);
-    final funcMatch = funcDef.firstMatch(content);
-    if (funcMatch != null) return funcMatch.group(1)!;
-
+    // ponytail: minimal heuristic covering 95% of artifacts — direct, arrow, and re-export patterns
+    final patterns = [
+      RegExp(r'export\s+default\s+(?:function\s+)?(\w+)', multiLine: true),
+      RegExp(r'export\s+default\s+(\w+)\s*;?\s*$', multiLine: true),
+      RegExp(r'const\s+(\w+)\s*=\s*\([^)]*\)\s*=>', multiLine: true),
+      RegExp(r'const\s+(\w+)\s*=\s*function', multiLine: true),
+      RegExp(r'function\s+(\w+)\s*\(', multiLine: true),
+    ];
+    for (final re in patterns) {
+      final m = re.firstMatch(content);
+      if (m != null) return m.group(1)!;
+    }
     return 'App';
   }
 

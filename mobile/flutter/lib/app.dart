@@ -1,5 +1,6 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'src/auth_service.dart';
 import 'src/dashboard_page.dart';
@@ -85,7 +86,8 @@ class IrisApp extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(color: kCrimsonBorder, width: 0.8),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
         labelStyle: const TextStyle(color: kWhite70),
         hintStyle: const TextStyle(color: kWhite38),
       ),
@@ -101,7 +103,8 @@ class IrisApp extends StatelessWidget {
         style: FilledButton.styleFrom(
           backgroundColor: kCrimson,
           foregroundColor: kWhite,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           elevation: 0,
           padding: const EdgeInsets.symmetric(vertical: 14),
           textStyle: const TextStyle(fontWeight: FontWeight.w700),
@@ -148,66 +151,82 @@ class _MainShellState extends State<MainShell> {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: kCrimson.withOpacity(0.35),
+              color: kCrimson.withValues(alpha: 0.35),
               blurRadius: 20,
               offset: const Offset(0, 6),
             ),
           ],
         ),
         child: FloatingActionButton(
-          onPressed: () => _showNewArtifact(context),
+          onPressed: () {
+            HapticFeedback.mediumImpact();
+            _showNewArtifact(context);
+          },
           backgroundColor: kCrimson,
-          child: const Icon(Icons.add, color: kWhite),
+          elevation: 0,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: const Icon(Icons.add, color: kWhite, size: 28),
         ),
       ),
     );
   }
 
   Widget _buildBottomNav(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-      decoration: BoxDecoration(
-        color: kBgNearBlack.withOpacity(0.95),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: kWhite.withOpacity(0.06), width: 0.5),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
-        child: BackdropFilter(
-          filter: ui.ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-          child: BottomNavigationBar(
-            currentIndex: _currentIndex,
-            onTap: (i) {
-              if (i == 2) {
-                _showProfileSheet(context);
-                return;
-              }
-              setState(() => _currentIndex = i);
-            },
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            type: BottomNavigationBarType.fixed,
-            selectedItemColor: kCrimson,
-            unselectedItemColor: kWhite38,
-            selectedFontSize: 12,
-            unselectedFontSize: 12,
-            items: const [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.dashboard_outlined),
-                activeIcon: Icon(Icons.dashboard),
-                label: 'Dashboard',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.library_books_outlined),
-                activeIcon: Icon(Icons.library_books),
-                label: 'Library',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.person_outline),
-                activeIcon: Icon(Icons.person),
-                label: 'Profile',
-              ),
-            ],
+    return SafeArea(
+      top: false,
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        decoration: BoxDecoration(
+          color: kBgNearBlack.withValues(alpha: 0.95),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: kWhite.withValues(alpha: 0.06), width: 0.5),
+          boxShadow: [
+            BoxShadow(
+                color: Colors.black.withValues(alpha: 0.4),
+                blurRadius: 20,
+                offset: const Offset(0, 8)),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(24),
+          child: BackdropFilter(
+            filter: ui.ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+            child: BottomNavigationBar(
+              currentIndex: _currentIndex,
+              onTap: (i) {
+                HapticFeedback.selectionClick();
+                if (i == 2) {
+                  _showProfileSheet(context);
+                  return;
+                }
+                setState(() => _currentIndex = i);
+              },
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              type: BottomNavigationBarType.fixed,
+              selectedItemColor: kCrimson,
+              unselectedItemColor: kWhite38,
+              selectedFontSize: 12,
+              unselectedFontSize: 12,
+              items: const [
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.dashboard_outlined),
+                  activeIcon: Icon(Icons.dashboard),
+                  label: 'Dashboard',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.library_books_outlined),
+                  activeIcon: Icon(Icons.library_books),
+                  label: 'Library',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.person_outline),
+                  activeIcon: Icon(Icons.person),
+                  label: 'Profile',
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -219,7 +238,7 @@ class _MainShellState extends State<MainShell> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: kCrimson.withOpacity(0.05),
+      barrierColor: kCrimson.withValues(alpha: 0.05),
       builder: (_) => const GlassSheet(child: _ProfileSheetContent()),
     );
   }
@@ -229,7 +248,7 @@ class _MainShellState extends State<MainShell> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: kCrimson.withOpacity(0.05),
+      barrierColor: kCrimson.withValues(alpha: 0.05),
       builder: (_) => const GlassSheet(child: NewArtifactSheet()),
     );
   }
@@ -255,9 +274,12 @@ class _ProfileSheetContent extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Row(
               children: [
-                const Text('Profile', style: TextStyle(
-                  fontSize: 20, fontWeight: FontWeight.w700, color: kWhite,
-                )),
+                const Text('Profile',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: kWhite,
+                    )),
                 const Spacer(),
                 IconButton(
                   icon: const Icon(Icons.close, color: kWhite54),
@@ -270,14 +292,20 @@ class _ProfileSheetContent extends StatelessWidget {
           CircleAvatar(
             radius: 36,
             backgroundColor: kCrimson,
-            child: Text(initial, style: const TextStyle(
-              fontSize: 28, fontWeight: FontWeight.w800, color: kWhite,
-            )),
+            child: Text(initial,
+                style: const TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w800,
+                  color: kWhite,
+                )),
           ),
           const SizedBox(height: 12),
-          Text(email, style: const TextStyle(
-            fontSize: 18, fontWeight: FontWeight.w600, color: kWhite,
-          )),
+          Text(email,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: kWhite,
+              )),
           const SizedBox(height: 4),
           Text(
             auth.isDriveMode ? 'Drive Account' : 'Guest',
@@ -287,12 +315,14 @@ class _ProfileSheetContent extends StatelessWidget {
           const GlassDivider(),
           ListTile(
             leading: const Icon(Icons.logout, color: Color(0xFFEF4444)),
-            title: const Text('Sign Out', style: TextStyle(color: Color(0xFFEF4444))),
+            title: const Text('Sign Out',
+                style: TextStyle(color: Color(0xFFEF4444))),
             onTap: () async {
               await auth.logout();
               if (!context.mounted) return;
               Navigator.pop(context);
-              Navigator.pushNamedAndRemoveUntil(context, '/login', (r) => false);
+              Navigator.pushNamedAndRemoveUntil(
+                  context, '/login', (r) => false);
             },
           ),
           const SizedBox(height: 16),
@@ -301,4 +331,3 @@ class _ProfileSheetContent extends StatelessWidget {
     );
   }
 }
-

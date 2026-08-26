@@ -64,12 +64,12 @@ Future<bool> showConfirmDialog(
           child: Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: kBgNearBlack.withOpacity(0.9),
+              color: kBgNearBlack.withValues(alpha: 0.9),
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: kWhite.withOpacity(0.08), width: 0.5),
+              border: Border.all(color: kWhite.withValues(alpha: 0.08), width: 0.5),
               boxShadow: [
                 BoxShadow(
-                  color: kCrimson.withOpacity(0.12),
+                  color: kCrimson.withValues(alpha: 0.12),
                   blurRadius: 40,
                   offset: const Offset(0, 12),
                 ),
@@ -100,7 +100,7 @@ Future<bool> showConfirmDialog(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: (confirmColor ?? const Color(0xFFEF4444)).withOpacity(0.3),
+                          color: (confirmColor ?? const Color(0xFFEF4444)).withValues(alpha: 0.3),
                           width: 0.5,
                         ),
                       ),
@@ -198,12 +198,12 @@ class _ToastWidgetState extends State<_ToastWidget>
                 color: widget.backgroundColor,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: widget.accentColor.withOpacity(0.3),
+                  color: widget.accentColor.withValues(alpha: 0.3),
                   width: 0.5,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: widget.accentColor.withOpacity(0.15),
+                    color: widget.accentColor.withValues(alpha: 0.15),
                     blurRadius: 20,
                     offset: const Offset(0, 8),
                   ),
@@ -214,7 +214,7 @@ class _ToastWidgetState extends State<_ToastWidget>
                   Container(
                     width: 28, height: 28,
                     decoration: BoxDecoration(
-                      color: widget.accentColor.withOpacity(0.15),
+                      color: widget.accentColor.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(widget.icon, size: 16, color: widget.accentColor),

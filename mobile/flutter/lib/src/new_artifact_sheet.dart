@@ -180,14 +180,14 @@ class _NewArtifactSheetState extends State<NewArtifactSheet>
                   decoration: BoxDecoration(
                     border: Border.all(
                       color: _selectedFileName != null
-                          ? kCrimson.withOpacity(0.5)
-                          : kWhite.withOpacity(0.08),
+                          ? kCrimson.withValues(alpha: 0.5)
+                          : kWhite.withValues(alpha: 0.08),
                       width: _selectedFileName != null ? 0.8 : 0.5,
                     ),
                     borderRadius: BorderRadius.circular(16),
                     color: _selectedFileName != null
-                        ? kCrimson.withOpacity(0.06)
-                        : kWhite.withOpacity(0.02),
+                        ? kCrimson.withValues(alpha: 0.06)
+                        : kWhite.withValues(alpha: 0.02),
                   ),
                   child: Column(
                     children: [
